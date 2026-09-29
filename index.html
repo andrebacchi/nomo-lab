@@ -1,0 +1,1712 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nomo LAB</title>
+<meta name="description" content="Nomogramas interativos de Fagan e do NNT para o ensino de raciocínio probabilístico em diagnóstico e tratamento. Criado por André D. Bacchi.">
+<meta name="author" content="André Demambre Bacchi">
+<meta name="theme-color" content="#0f4c4c">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Nomo LAB">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font-size:14px}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,500&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: no celular, uma coluna (entradas → resultado → nomograma → figuras); no desktop, nomograma à esquerda e painel à direita */
+:root{
+  --bg:#f6f7f4; --surface:#ffffff; --sunk:#eef1ee; --fg:#14201e; --muted:#5d6a67; --line:#dce2df; --tick:#8a9693;
+  --accent:#0f6b63; --accent-soft:#e3f1ee; --on-accent:#ffffff;
+  --alt:#b35c14; --alt-soft:#fbeedf;
+  --harm:#b0362b; --harm-soft:#f9e6e3;
+  --ink:#14201e; --on-ink:#ffffff;
+  --z1:#dcebdc; --z1-t:#2f6b3a; --z2:#f5ead0; --z2-t:#86600b; --z3:#f3dcd8; --z3-t:#9a3328;
+  --dot-off:#d6dcda; --scrim:rgba(10,20,18,.45);
+  --f-display:"Newsreader", Georgia, "Times New Roman", serif;
+  --f-body:"Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1615; --surface:#141f1e; --sunk:#1a2826; --fg:#e3ebe9; --muted:#9aa9a6; --line:#293836; --tick:#6f7f7c;
+  --accent:#5cc3b4; --accent-soft:#17332f; --on-accent:#08201d;
+  --alt:#f0a35e; --alt-soft:#35261a;
+  --harm:#f08a7e; --harm-soft:#3a2220;
+  --ink:#e3ebe9; --on-ink:#0e1615;
+  --z1:#1d3322; --z1-t:#8fd19b; --z2:#352c17; --z2-t:#e8c06a; --z3:#3a2220; --z3-t:#f0a197;
+  --dot-off:#2c3a38; --scrim:rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1615; --surface:#141f1e; --sunk:#1a2826; --fg:#e3ebe9; --muted:#9aa9a6; --line:#293836; --tick:#6f7f7c;
+  --accent:#5cc3b4; --accent-soft:#17332f; --on-accent:#08201d;
+  --alt:#f0a35e; --alt-soft:#35261a;
+  --harm:#f08a7e; --harm-soft:#3a2220;
+  --ink:#e3ebe9; --on-ink:#0e1615;
+  --z1:#1d3322; --z1-t:#8fd19b; --z2:#352c17; --z2-t:#e8c06a; --z3:#3a2220; --z3-t:#f0a197;
+  --dot-off:#2c3a38; --scrim:rgba(0,0,0,.6); color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:0 56px;-webkit-text-size-adjust:100%}
+.wrap{max-width:1320px;margin:0 auto}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+/* topo */
+header.top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-block:18px 12px}
+.brand h1{font-family:var(--f-display);font-weight:600;font-size:34px;line-height:1;margin:0;letter-spacing:-.01em}
+.brand h1 em{font-style:normal;color:var(--accent)}
+.brand p{margin:5px 0 0;color:var(--muted);font-size:12px}
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:14px;white-space:nowrap;min-height:40px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn svg{width:16px;height:16px;flex:none}
+.tabbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);margin-inline:-16px;padding:8px 16px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px;background:var(--surface)}
+.seg button{border:0;background:transparent;border-radius:999px;padding:7px 14px;font-size:14px;color:var(--muted);min-height:36px}
+.seg button.on{background:var(--ink);color:var(--on-ink)}
+.seg.small button{padding:4px 11px;font-size:12.5px;min-height:30px}
+.tabbar .seg{flex:1 1 auto;max-width:420px}
+.tabbar .seg button{flex:1}
+
+.intro{padding-block:18px 12px}
+.intro h2{font-family:var(--f-display);font-weight:500;font-size:24px;margin:0;max-width:44ch;text-wrap:balance;line-height:1.2}
+.intro h2 i{color:var(--accent)}
+.intro p{margin:6px 0 0;color:var(--muted);max-width:66ch;font-size:14px}
+.presets{display:flex;gap:6px;align-items:center;overflow-x:auto;padding-block:4px 10px;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}
+.presets::-webkit-scrollbar{display:none}
+.presets .lbl{font-size:12px;color:var(--muted);flex:none}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;white-space:nowrap;flex:none;min-height:34px}
+.chip:hover{border-color:var(--muted)}
+.chip.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.chip.clear{color:var(--muted)}
+.chip:disabled{opacity:.45;cursor:default}
+
+.bench{display:grid;gap:16px;grid-template-columns:minmax(0,1fr);grid-template-areas:"ctl" "out" "nomo" "more"}
+.a-ctl{grid-area:ctl}.a-out{grid-area:out}.a-nomo{grid-area:nomo}.a-more{grid-area:more}
+@media (min-width:980px){.bench{grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);grid-template-areas:"nomo ctl" "nomo out" "nomo more";align-items:start}
+  .a-nomo{position:sticky;top:70px}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;min-width:0}
+@media (max-width:520px){.card{padding:14px 14px;border-radius:12px}}
+.eyebrow{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:500}
+h3{font-family:var(--f-display);font-weight:600;font-size:19px;margin:0;text-wrap:balance;line-height:1.25}
+.stack{display:flex;flex-direction:column;gap:14px;min-width:0}
+.card-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.more-btn{flex:none;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:999px;padding:5px 12px;font-size:13px;font-weight:500;min-height:34px}
+.more-btn:hover{background:var(--accent-soft)}
+.more-btn svg{width:15px;height:15px}
+
+/* entradas */
+.inputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.inputs.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.inp{display:grid;grid-template-rows:1fr auto;gap:4px;min-width:0}
+.inp label{font-size:12.5px;font-weight:600;line-height:1.25}
+.inp label small{display:block;font-weight:400;color:var(--muted);font-size:11.5px}
+.box{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);padding-inline:10px;min-height:52px;transition:border-color .15s}
+.box:focus-within{border-color:var(--accent)}
+.box input{width:100%;min-width:0;border:0;background:transparent;color:var(--fg);font:600 22px var(--f-body);font-variant-numeric:tabular-nums;padding:8px 0;outline:none}
+.box input::placeholder{color:var(--tick);font-weight:400}
+.box span{color:var(--muted);font-size:15px;margin-left:2px;flex:none}
+.box.sm{min-height:42px}.box.sm input{font-size:17px}
+.inp.pos .box{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.inp.neg .box{border-color:color-mix(in srgb,var(--alt) 40%,var(--line))}
+.or-row{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin-block:12px 8px}
+.or-row::before,.or-row::after{content:"";flex:1;height:1px;background:var(--line)}
+.hint{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+.hint.warn{color:var(--alt)}
+.ctl-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.toggle{display:flex;gap:10px;align-items:center;font-size:14px;font-weight:500;cursor:pointer;min-height:36px}
+.toggle input{accent-color:var(--accent);width:18px;height:18px}
+.sep{height:1px;background:var(--line);margin-block:12px}
+
+/* leituras */
+.readouts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ro{border-radius:12px;padding:12px 14px;border:1px solid var(--line);min-width:0;background:var(--surface)}
+.ro .eyebrow{display:flex;gap:6px;align-items:center;font-size:10.5px}
+.ro .eyebrow i{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+.ro b{display:block;font-family:var(--f-display);font-weight:600;font-size:36px;line-height:1.05;font-variant-numeric:tabular-nums;margin-top:4px}
+.ro span.s{display:block;color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}
+.ro.pos{background:var(--accent-soft);border-color:transparent}.ro.pos b{color:var(--accent)}
+.ro.neg{background:var(--alt-soft);border-color:transparent}.ro.neg b{color:var(--alt)}
+.ro.harm{background:var(--harm-soft);border-color:transparent}.ro.harm b{color:var(--harm)}
+.ro.empty b{color:var(--tick)}
+.zonepill{display:inline-block;font-size:11.5px;font-weight:600;border-radius:999px;padding:2px 9px;margin-top:6px}
+.zp1{background:var(--z1);color:var(--z1-t)}.zp2{background:var(--z2);color:var(--z2-t)}.zp3{background:var(--z3);color:var(--z3-t)}
+.verdict{border-left:3px solid var(--accent);padding:2px 0 2px 14px}
+.verdict p{margin:4px 0 0;max-width:62ch}
+.verdict.warn{border-left-color:var(--alt)}
+.verdict.idle{border-left-color:var(--line)}
+.chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;margin-top:8px}
+.chain .st{background:var(--sunk);border-radius:6px;padding:3px 9px;font-variant-numeric:tabular-nums}
+.chain .ar{color:var(--muted)}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+
+/* nomograma */
+.nomo-card{padding:12px 8px 8px}
+.nomo-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:2px 8px 4px;flex-wrap:wrap}
+.nomo-wrap{position:relative}
+svg.nomo{width:100%;height:auto;display:block;user-select:none;-webkit-user-select:none}
+.strip{position:absolute;touch-action:none;cursor:ns-resize;border-radius:12px;-webkit-tap-highlight-color:transparent}
+.strip:active{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+svg text{font-family:var(--f-body);fill:var(--muted)}
+svg .ax{stroke:var(--fg);stroke-width:1.4}
+svg .tk{stroke:var(--tick);stroke-width:1}
+svg .tkM{stroke:var(--fg);stroke-width:1.2}
+svg .tl{fill:var(--fg);font-variant-numeric:tabular-nums}
+svg .ttl{fill:var(--fg);font-weight:600}
+svg .ln{stroke-width:2.4;fill:none;stroke-linecap:round}
+svg .ln.pos{stroke:var(--accent)} svg .ln.neg{stroke:var(--alt)}
+svg .pin{stroke:var(--tick);stroke-width:1.4;stroke-dasharray:5 4;fill:none}
+svg .pinT{font-size:11px;fill:var(--muted)}
+svg .hd{stroke:var(--surface);stroke-width:3}
+svg .hd.pos{fill:var(--accent)} svg .hd.neg{fill:var(--alt)} svg .hd.pre{fill:var(--ink)}
+svg .tag rect{fill:var(--ink)} svg .tag text{fill:var(--on-ink);font-weight:600;font-variant-numeric:tabular-nums}
+svg .tag.pos rect{fill:var(--accent)} svg .tag.pos text{fill:var(--on-accent)}
+svg .tag.neg rect{fill:var(--alt)} svg .tag.neg text{fill:var(--on-accent)}
+svg .z1{fill:var(--z1)} svg .z2{fill:var(--z2)} svg .z3{fill:var(--z3)}
+svg .ghost{fill:var(--muted);font-style:italic}
+.drag-hint{font-size:12px;color:var(--muted);text-align:center;margin:4px 8px 2px}
+
+/* figuras */
+.figs{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin-top:16px}
+@media (min-width:980px){.figs{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.lede{color:var(--muted);font-size:13px;margin:4px 0 12px;max-width:62ch}
+svg.dots{width:100%;height:auto;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
+.sentence{margin:10px 0 0;font-size:14px;max-width:64ch}
+.sentence b{font-variant-numeric:tabular-nums}
+.empty-note{margin:10px 0 0;font-size:13.5px;color:var(--muted);background:var(--sunk);border-radius:8px;padding:10px 12px}
+svg.chart{width:100%;height:auto;display:block;overflow:visible}
+svg.chart .g{stroke:var(--line)} svg.chart .a{stroke:var(--tick)}
+svg.chart .cp{stroke:var(--accent);stroke-width:2.4;fill:none} svg.chart .cn{stroke:var(--alt);stroke-width:2.4;fill:none}
+svg.chart .dg{stroke:var(--tick);stroke-dasharray:4 4}
+svg.chart text{font-size:12px}
+svg.chart .harmL{stroke:var(--harm);stroke-width:1.8;stroke-dasharray:6 4}
+svg.chart .harmZ{fill:var(--harm);opacity:.08}
+
+.figs .wide{grid-column:1/-1}
+.roc-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+@media (min-width:760px){.roc-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start}}
+.cut{margin-top:4px}
+.cut label{font-size:13px;font-weight:600;display:block;margin-bottom:2px}
+.cut input{width:100%;accent-color:var(--ink);height:32px}
+.cut-ends{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.roc-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}
+@media (max-width:520px){.roc-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.rs{background:var(--sunk);border-radius:8px;padding:8px 10px;min-width:0}
+.rs span{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block}
+.rs b{display:block;font-size:19px;font-variant-numeric:tabular-nums}
+.rs small{display:block;font-size:11.5px;color:var(--muted)}
+svg#roc{touch-action:pan-y}
+svg.chart .pdfH{fill:var(--dot-off);stroke:var(--tick);stroke-width:1.4;fill-opacity:.55}
+svg.chart .pdfD{fill:var(--accent);fill-opacity:.12;stroke:var(--accent);stroke-width:1.6}
+svg.chart .fpA{fill:var(--alt);opacity:.55} svg.chart .fnA{fill:var(--accent);opacity:.45}
+svg.chart .cutL{stroke:var(--ink);stroke-width:2}
+svg.chart .aucA{fill:var(--accent);opacity:.08}
+/* nomear o caso */
+details.name-case{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:0 12px}
+details.name-case summary{cursor:pointer;list-style:none;padding:10px 0;font-size:13.5px;font-weight:600;display:flex;justify-content:space-between;gap:8px;align-items:center}
+details.name-case summary::-webkit-details-marker{display:none}
+details.name-case summary::after{content:"+";font-size:18px;color:var(--muted);font-weight:400}
+details.name-case[open] summary::after{content:"−"}
+details.name-case summary small{font-weight:400;color:var(--accent);margin-left:auto;margin-right:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:55%}
+.name-grid{display:grid;gap:10px;padding-bottom:12px}
+@media (min-width:600px){.name-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.name-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.tbox{border:1.5px solid var(--line);border-radius:10px;background:var(--surface);padding:0 10px;min-height:42px;display:flex;align-items:center}
+.tbox:focus-within{border-color:var(--accent)}
+.tbox input{width:100%;border:0;background:transparent;color:var(--fg);font:500 16px var(--f-body);outline:none;padding:8px 0}
+.tbox input::placeholder{color:var(--tick);font-weight:400}
+/* topo e guia */
+.top-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.top-actions .sm{display:none}
+@media (max-width:520px){.top-actions{flex-wrap:nowrap}.top-actions .lg{display:none}.top-actions .sm{display:inline}}
+@media (max-width:520px){header.top{flex-wrap:wrap}.top-actions{width:100%;justify-content:stretch}.top-actions .btn{flex:1;justify-content:center}}
+.intro-banner{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--accent-soft);border-radius:12px;padding:10px 14px;margin-top:12px}
+.intro-banner p{margin:0;font-size:14px}
+.vcard{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;padding:12px 16px}
+.vcard .verdict{flex:1 1 240px;min-width:0}
+.vcard .more-btn{margin-left:auto}
+.harm-row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.learn .mini2x2{border-collapse:collapse;margin:6px 0 12px;font-size:14px;width:auto}
+.learn .mini2x2 td,.learn .mini2x2 th{border:1px solid var(--line);padding:6px 12px;text-align:center}
+.learn .mini2x2 th{text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg);background:var(--sunk)}
+.learn .tools{display:grid;gap:8px;margin:6px 0 12px}
+.learn .tools div{display:grid;grid-template-columns:132px minmax(0,1fr);gap:10px;font-size:14px;border-bottom:1px solid var(--line);padding-bottom:6px}
+@media (max-width:520px){.learn .tools div{grid-template-columns:minmax(0,1fr)}}
+.learn .tools b{font-size:13.5px}
+/* incerteza */
+.btn.on{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.unc-block{margin-top:12px;border:1px dashed color-mix(in srgb,var(--ink) 30%,var(--line));border-radius:12px;padding:12px}
+.unc-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.unc-grid{display:grid;gap:10px}
+@media (min-width:600px){.unc-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.urow{display:grid;gap:4px;min-width:0}
+.ul{font-size:12.5px;font-weight:600}
+.upair{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:center}
+.ua{color:var(--muted);font-size:13px}
+.ro .rg{display:block;font-size:12.5px;font-weight:600;color:var(--fg);font-variant-numeric:tabular-nums;margin-top:2px}
+.robust{margin:8px 0 0;font-size:14px;padding-top:8px;border-top:1px dashed var(--line)}
+svg .fan.pos{fill:var(--accent);opacity:.14} svg .fan.neg{fill:var(--alt);opacity:.16}
+svg .ub.pre{fill:var(--ink);opacity:.25} svg .ub.pos{fill:var(--accent);opacity:.4} svg .ub.neg{fill:var(--alt);opacity:.4}
+svg.chart .bandP{fill:var(--accent);opacity:.15} svg.chart .bandN{fill:var(--alt);opacity:.17} svg.chart .bandX{fill:var(--ink);opacity:.06}
+/* desafio */
+.chal{padding:14px 16px;border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.chal-off{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.chal-off p{margin:4px 0 0;font-size:13.5px;color:var(--muted);max-width:52ch}
+.chal-h{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.chal .case{font-size:15px;margin:2px 0 10px;font-variant-numeric:tabular-nums;background:var(--sunk);border-radius:8px;padding:8px 10px}
+.chal .q{font-weight:600;margin:0 0 8px;font-size:14px}
+.btn.block{width:100%;justify-content:center;margin-top:10px}
+.chal-t{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums;margin:4px 0 6px}
+.chal-t th{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:500;text-align:right;padding:4px 6px}
+.chal-t th:first-child,.chal-t td:first-child{text-align:left}
+.chal-t td{padding:8px 6px;border-top:1px solid var(--line);text-align:right}
+.err{font-weight:600;border-radius:999px;padding:2px 8px;font-size:12.5px;white-space:nowrap}
+.err.good{background:var(--z1);color:var(--z1-t)}.err.mid{background:var(--z2);color:var(--z2-t)}.err.bad{background:var(--z3);color:var(--z3-t)}
+.fb{margin:8px 0 0;font-size:14px;max-width:62ch}
+.score{margin-top:10px;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.maskable{position:relative}
+.maskable.masked > :not(.card-h){filter:blur(7px);opacity:.35;pointer-events:none;user-select:none}
+.maskable.masked::after{content:"Faça sua estimativa para ver";position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);background:var(--ink);color:var(--on-ink);padding:8px 14px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap}
+/* limiares calculados */
+.thr-out{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.thr-out .rs b{font-size:18px}
+.thr-strip{grid-column:1/-1;margin-top:2px}
+.thr-strip svg{width:100%;height:auto;display:block}
+.thr-strip text{font-size:11px;fill:var(--muted);font-family:var(--f-body)}
+/* folha "saiba mais" e atalho */
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+@media (min-width:700px){.scrim{align-items:center;padding:24px}}
+.sheet{background:var(--surface);color:var(--fg);width:100%;max-width:680px;max-height:88vh;overflow:auto;border-radius:18px 18px 0 0;padding:0 20px calc(24px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch}
+@media (min-width:700px){.sheet{border-radius:16px;padding-bottom:24px}}
+.sheet-h{position:sticky;top:0;background:var(--surface);display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0 10px;border-bottom:1px solid var(--line);z-index:1}
+.sheet-h h3{font-size:21px}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:8px auto 0}
+@media (min-width:700px){.grab{display:none}}
+.x{border:0;background:var(--sunk);border-radius:999px;width:36px;height:36px;font-size:20px;line-height:1;color:var(--fg);flex:none}
+.learn{font-size:15px;line-height:1.6}
+.learn h4{font-family:var(--f-display);font-size:17px;font-weight:600;margin:20px 0 4px}
+.learn p{margin:0 0 10px}
+.learn ul,.learn ol{margin:0 0 10px;padding-left:20px}
+.learn li{margin-bottom:4px}
+.learn .f{font-family:var(--f-mono);font-size:13.5px;background:var(--sunk);border-radius:8px;padding:10px 12px;margin:6px 0 12px;overflow-x:auto;white-space:nowrap;line-height:1.8}
+.learn .yours{background:var(--accent-soft);border-radius:10px;padding:12px 14px;margin-top:16px}
+.learn .yours h4{margin-top:0}
+.learn .trap{background:var(--alt-soft);border-radius:10px;padding:12px 14px;margin-top:12px}
+.learn .trap h4{margin-top:0}
+.learn table{border-collapse:collapse;width:100%;font-size:14px;margin:6px 0 12px}
+.learn td,.learn th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-variant-numeric:tabular-nums}
+.learn th{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.learn .src{font-size:12.5px;color:var(--muted);margin-top:16px}
+.plat{display:flex;gap:6px;margin:14px 0 8px}
+.learn .steps-l{counter-reset:s;list-style:none;padding:0;margin:8px 0 12px}
+.steps-l li{counter-increment:s;display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;align-items:start;padding-block:8px;border-bottom:1px solid var(--line)}
+.steps-l li::before{content:counter(s);width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600}
+kbd{font-family:var(--f-body);font-size:13px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;background:var(--sunk);white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--on-ink);padding:10px 16px;border-radius:999px;font-size:13.5px;z-index:30}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="brand"><h1>Nomo <em>LAB</em></h1><p>Criado por André D. Bacchi</p></div>
+  <div class="top-actions">
+    <button class="btn primary" id="howBtn"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 4c-1.5-1-3.5-1.3-6-1v10c2.5-.3 4.5 0 6 1 1.5-1 3.5-1.3 6-1V3c-2.5-.3-4.5 0-6 1zM8 4v10"/></svg><span class="lg">Como usar este aplicativo</span><span class="sm">Como usar</span></button>
+    <button class="btn" id="shortcutBtn" aria-label="Adicionar atalho à tela inicial">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3.5" y="1.5" width="9" height="13" rx="2"/><path d="M8 5.5v5M5.5 8h5"/></svg>
+      <span class="lg">Instalar app</span><span class="sm">Instalar</span>
+    </button>
+  </div>
+</header>
+<div class="intro-banner" id="introBanner" hidden><p><b>Primeira vez aqui?</b> Veja em poucos minutos como usar o Nomo LAB.</p><div class="row"><button class="chip" id="introOpen">Como usar</button><button class="chip clear" id="introClose" aria-label="Dispensar aviso">Agora não</button></div></div>
+<nav class="tabbar">
+  <div class="seg" id="tabs" role="tablist"><button data-tab="dx" role="tab">Diagnóstico</button><button data-tab="tx" role="tab">Tratamento</button></div>
+  <button class="btn" id="uncBtn" aria-pressed="false" title="Mostrar intervalos de incerteza"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 2.5v6M5 5.5h6M5 12.5h6"/></svg>Incerteza</button>
+</nav>
+
+<!-- ===================== DIAGNÓSTICO ===================== -->
+<section id="v-dx">
+  <div class="intro">
+    <h2>Da suspeita à probabilidade: <i>odds pré-teste × LR = odds pós-teste</i></h2>
+    <p>Digite a probabilidade pré-teste e o desempenho do teste, ou toque nas escalas do nomograma e arraste.</p>
+  </div>
+  <div class="presets" id="dxPresets"><span class="lbl">Exemplos</span></div>
+
+  <div class="bench">
+    <div class="card a-ctl">
+      <div class="ctl-h"><span class="eyebrow">Seus dados</span><div class="row"><button class="more-btn" data-learn="dados"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button><button class="chip clear" id="dxClear">Zerar</button></div></div>
+      <div class="inputs">
+        <div class="inp"><label for="preN">Pré-teste<small>suspeita inicial</small></label><div class="box"><input id="preN" inputmode="decimal" autocomplete="off" placeholder="—"><span>%</span></div></div>
+        <div class="inp"><label for="seN">Sensibilidade<small>positivos entre doentes</small></label><div class="box"><input id="seN" inputmode="decimal" autocomplete="off" placeholder="—"><span>%</span></div></div>
+        <div class="inp"><label for="spN">Especificidade<small>negativos entre sadios</small></label><div class="box"><input id="spN" inputmode="decimal" autocomplete="off" placeholder="—"><span>%</span></div></div>
+      </div>
+      <div class="or-row">ou digite as razões de verossimilhança</div>
+      <div class="inputs two">
+        <div class="inp pos"><label for="lrpN">LR+ <small>resultado positivo</small></label><div class="box sm"><input id="lrpN" inputmode="decimal" autocomplete="off" placeholder="—"></div></div>
+        <div class="inp neg"><label for="lrnN">LR− <small>resultado negativo</small></label><div class="box sm"><input id="lrnN" inputmode="decimal" autocomplete="off" placeholder="—"></div></div>
+      </div>
+      <p class="hint" id="dxHint"></p>
+      <details class="name-case" id="dxNames"><summary>Nomear o caso (opcional)<small id="dxNamesSum"></small></summary>
+        <div class="name-grid">
+          <div class="inp"><label for="dzN">Doença<small>ex.: embolia pulmonar</small></label><div class="tbox"><input id="dzN" autocomplete="off" maxlength="40" placeholder="a doença"></div></div>
+          <div class="inp"><label for="tsN">Exame<small>ex.: D-dímero</small></label><div class="tbox"><input id="tsN" autocomplete="off" maxlength="40" placeholder="o exame"></div></div>
+        </div></details>
+      <div class="unc-block" id="dxUnc" hidden>
+        <div class="unc-h"><span class="eyebrow">Incerteza</span><button class="more-btn" data-learn="unc"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button></div>
+        <div class="unc-grid">
+          <div class="urow "><span class="ul">Pré-teste: faixa plausível</span><div class="upair"><div class="box sm"><input id="preLoN" inputmode="decimal" autocomplete="off" placeholder="mín."><span>%</span></div><span class="ua">a</span><div class="box sm"><input id="preHiN" inputmode="decimal" autocomplete="off" placeholder="máx."><span>%</span></div></div></div>
+          <div id="uncSeSp" class="unc-grid" style="grid-column:1/-1">
+            <div class="urow "><span class="ul">Sensibilidade: IC 95%</span><div class="upair"><div class="box sm"><input id="seLoN" inputmode="decimal" autocomplete="off" placeholder="mín."><span>%</span></div><span class="ua">a</span><div class="box sm"><input id="seHiN" inputmode="decimal" autocomplete="off" placeholder="máx."><span>%</span></div></div></div>
+            <div class="urow "><span class="ul">Especificidade: IC 95%</span><div class="upair"><div class="box sm"><input id="spLoN" inputmode="decimal" autocomplete="off" placeholder="mín."><span>%</span></div><span class="ua">a</span><div class="box sm"><input id="spHiN" inputmode="decimal" autocomplete="off" placeholder="máx."><span>%</span></div></div></div>
+            <div class="urow"><span class="ul">…ou o tamanho do estudo</span><div class="upair"><div class="box sm"><input id="nDN" inputmode="numeric" autocomplete="off" placeholder="doentes"></div><span class="ua">e</span><div class="box sm"><input id="nHN" inputmode="numeric" autocomplete="off" placeholder="sadios"></div></div></div>
+          </div>
+          <div id="uncLR" class="unc-grid" style="grid-column:1/-1" hidden>
+            <div class="urow "><span class="ul">LR+: IC 95%</span><div class="upair"><div class="box sm"><input id="lrpLoN" inputmode="decimal" autocomplete="off" placeholder="mín."></div><span class="ua">a</span><div class="box sm"><input id="lrpHiN" inputmode="decimal" autocomplete="off" placeholder="máx."></div></div></div>
+            <div class="urow "><span class="ul">LR−: IC 95%</span><div class="upair"><div class="box sm"><input id="lrnLoN" inputmode="decimal" autocomplete="off" placeholder="mín."></div><span class="ua">a</span><div class="box sm"><input id="lrnHiN" inputmode="decimal" autocomplete="off" placeholder="máx."></div></div></div>
+          </div>
+        </div>
+        <p class="hint" id="dxUncNote"></p>
+      </div>
+      <div class="sep"></div>
+      <label class="toggle"><input type="checkbox" id="thrOn"> Mostrar limiares de decisão</label>
+      <div id="thrFields" hidden>
+        <div class="ctl-h" style="margin:10px 0 8px">
+          <div class="seg small" id="thrMode"><button data-v="calc">Calcular</button><button data-v="manual">Digitar</button></div>
+          <button class="more-btn" data-learn="thr"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button>
+        </div>
+        <div id="thrCalc">
+          <p class="hint" style="margin:0 0 8px">Use a mesma “moeda” nos três campos, por exemplo mortes (ou eventos graves) a cada 100 pacientes.</p>
+          <div class="inputs">
+            <div class="inp"><label for="thrB">Benefício do tratamento<small>em quem tem a doença</small></label><div class="box sm"><input id="thrB" inputmode="decimal" autocomplete="off" placeholder="—"></div></div>
+            <div class="inp"><label for="thrH">Dano do tratamento<small>em quem não tem a doença</small></label><div class="box sm"><input id="thrH" inputmode="decimal" autocomplete="off" placeholder="—"></div></div>
+            <div class="inp"><label for="thrRt">Risco do exame<small>em quem faz o exame</small></label><div class="box sm"><input id="thrRt" inputmode="decimal" autocomplete="off" placeholder="0"></div></div>
+          </div>
+          <div class="thr-out" id="thrOut"></div>
+        </div>
+        <div id="thrManual" hidden>
+          <div class="inputs two" style="margin-top:4px">
+            <div class="inp"><label for="tTestN">Limiar de teste<small>abaixo: descartar sem testar</small></label><div class="box sm"><input id="tTestN" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
+            <div class="inp"><label for="tTreatN">Limiar de tratamento<small>acima: tratar sem mais testes</small></label><div class="box sm"><input id="tTreatN" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stack a-out">
+      <div class="card chal" id="dxChal"></div>
+      <div class="readouts">
+        <div class="ro pos" id="roPosBox"><span class="eyebrow"><i style="background:var(--accent)"></i>Se der positivo</span><b id="roPos">—</b><span class="s" id="roPosS"></span><span class="rg" id="roPosR"></span><span id="roPosZ"></span></div>
+        <div class="ro neg" id="roNegBox"><span class="eyebrow"><i style="background:var(--alt)"></i>Se der negativo</span><b id="roNeg">—</b><span class="s" id="roNegS"></span><span class="rg" id="roNegR"></span><span id="roNegZ"></span></div>
+      </div>
+      <div class="card vcard"><div class="verdict" id="dxVerdict"></div><button class="more-btn" data-learn="dxres"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button></div>
+    </div>
+
+    <div class="card nomo-card a-nomo">
+      <div class="nomo-h">
+        <span class="eyebrow">Nomograma de Fagan</span>
+        <button class="more-btn" data-learn="fagan"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button>
+      </div>
+      <div class="nomo-h" style="padding-top:0">
+        <div class="seg small" id="dxShow"><button data-v="both">Ambos</button><button data-v="pos">Positivo</button><button data-v="neg">Negativo</button></div>
+        <div class="row"><button class="chip" id="dxPin">Fixar linha</button><button class="chip clear" id="dxUnpin" hidden>Limpar</button></div>
+      </div>
+      <div class="nomo-wrap" id="faganWrap"><svg class="nomo" id="fagan" aria-label="Nomograma de Fagan interativo"></svg></div>
+      <p class="drag-hint">Toque em uma escala para marcar o valor e arraste para ajustar.</p>
+    </div>
+
+    <div class="card a-more">
+      <div class="card-h" style="align-items:center"><span class="eyebrow">Teste em sequência</span><button class="more-btn" data-learn="seq"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button></div>
+      <div class="chain" id="chain"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="chip" id="usePos">Positivo → novo pré-teste</button>
+        <button class="chip" id="useNeg">Negativo → novo pré-teste</button>
+        <button class="chip clear" id="chainUndo">Desfazer</button>
+      </div>
+      <p class="lede" style="margin:8px 0 0">Vale para testes condicionalmente independentes. Dois testes que medem o mesmo fenômeno não somam informação dessa forma.</p>
+    </div>
+  </div>
+
+  <div class="figs">
+    <div class="card maskable" id="dxDotsCard">
+      <div class="card-h"><h3>1.000 pacientes como este</h3><button class="more-btn" data-learn="dxdots"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button></div>
+      <p class="lede" id="dotsLede">Frequências naturais: a mesma conta de Bayes, contada em pessoas.</p>
+      <svg class="dots" id="dxDots" viewBox="0 0 400 250" role="img" aria-label="Matriz de 1000 pacientes"></svg>
+      <div class="legend" id="dxLegend"></div>
+      <p class="sentence" id="dxSentence"></p>
+    </div>
+    <div class="card maskable" id="leafCard">
+      <div class="card-h"><h3>O mesmo teste em qualquer suspeita</h3><button class="more-btn" data-learn="leaf"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button></div>
+      <p class="lede">Probabilidade pós-teste para cada probabilidade pré-teste possível. A diagonal é um teste inútil.</p>
+      <svg class="chart" id="leaf" viewBox="0 0 420 320" role="img" aria-label="Curvas pré-teste versus pós-teste"></svg>
+    </div>
+    <div class="card wide">
+      <div class="card-h"><h3>Curva ROC e ponto de corte</h3><button class="more-btn" data-learn="roc"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button></div>
+      <p class="lede">Para testes com resultado contínuo, sensibilidade e especificidade dependem de onde se põe o ponto de corte. Mova o corte e veja as duas mudarem juntas.</p>
+      <div class="roc-grid">
+        <div>
+          <svg class="chart" id="dist" viewBox="0 0 420 190" role="img" aria-label="Distribuições dos resultados em doentes e sadios"></svg>
+          <div class="legend" id="distLegend"></div>
+          <div class="cut" style="margin-top:14px">
+            <label for="cutR">Ponto de corte</label>
+            <input type="range" id="cutR" min="0" max="1000" step="1" aria-label="Ponto de corte">
+            <div class="cut-ends"><span>← mais sensível</span><span>mais específico →</span></div>
+          </div>
+        </div>
+        <svg class="chart" id="roc" viewBox="0 0 360 350" role="img" aria-label="Curva ROC"></svg>
+      </div>
+      <div class="roc-stats" id="rocStats"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TRATAMENTO ===================== -->
+<section id="v-tx" hidden>
+  <div class="intro">
+    <h2>O mesmo tratamento, benefícios diferentes: <i>NNT = 1 / (risco basal × RRR)</i></h2>
+    <p>Digite o risco basal do paciente e o efeito do tratamento, ou toque nas escalas do nomograma e arraste.</p>
+  </div>
+  <div class="presets" id="txPresets"><span class="lbl">Exemplos</span></div>
+
+  <div class="bench">
+    <div class="card a-ctl">
+      <div class="ctl-h"><span class="eyebrow">Seus dados</span><div class="row"><button class="more-btn" data-learn="txdados"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button><button class="chip clear" id="txClear">Zerar</button></div></div>
+      <div class="ctl-h" style="margin-bottom:8px"><span style="font-size:12.5px;font-weight:600">Informar o efeito como</span>
+        <div class="seg small" id="txMode"><button data-v="rrr">RRR</button><button data-v="rr">RR</button><button data-v="or">OR</button><button data-v="trial">Ensaio</button></div></div>
+      <div class="inputs two">
+        <div class="inp"><label for="pcN">Risco basal<small>sem tratamento</small></label><div class="box"><input id="pcN" inputmode="decimal" autocomplete="off" placeholder="—"><span>%</span></div></div>
+        <div class="inp" data-m="rrr"><label for="rrrN">RRR<small>redução relativa do risco</small></label><div class="box"><input id="rrrN" inputmode="decimal" autocomplete="off" placeholder="—"><span>%</span></div></div>
+        <div class="inp" data-m="rr" hidden><label for="rrN">Risco relativo<small>tratado ÷ controle</small></label><div class="box"><input id="rrN" inputmode="decimal" autocomplete="off" placeholder="—"></div></div>
+        <div class="inp" data-m="or" hidden><label for="orN">Odds ratio<small>convertida para este risco basal</small></label><div class="box"><input id="orN" inputmode="decimal" autocomplete="off" placeholder="—"></div></div>
+      </div>
+      <div data-m="trial" hidden>
+        <div class="or-row">dados do ensaio clínico</div>
+        <div class="inputs two">
+          <div class="inp"><label for="cerN">Eventos no controle<small>CER</small></label><div class="box sm"><input id="cerN" inputmode="decimal" autocomplete="off" placeholder="—"><span>%</span></div></div>
+          <div class="inp"><label for="eerN">Eventos no tratado<small>EER</small></label><div class="box sm"><input id="eerN" inputmode="decimal" autocomplete="off" placeholder="—"><span>%</span></div></div>
+        </div>
+      </div>
+      <p class="hint" id="txHint"></p>
+      <details class="name-case" id="txNames"><summary>Nomear o caso (opcional)<small id="txNamesSum"></small></summary>
+        <div class="name-grid three">
+          <div class="inp"><label for="ivN">Intervenção<small>ex.: estatina</small></label><div class="tbox"><input id="ivN" autocomplete="off" maxlength="40" placeholder="o tratamento"></div></div>
+          <div class="inp"><label for="ocN">Desfecho evitado<small>ex.: infarto</small></label><div class="tbox"><input id="ocN" autocomplete="off" maxlength="40" placeholder="o desfecho"></div></div>
+          <div class="inp"><label for="prN">Período<small>ex.: 5 anos</small></label><div class="tbox"><input id="prN" autocomplete="off" maxlength="30" placeholder="se souber"></div></div>
+        </div></details>
+      <div class="unc-block" id="txUnc" hidden>
+        <div class="unc-h"><span class="eyebrow">Incerteza</span><button class="more-btn" data-learn="unc"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button></div>
+        <div class="unc-grid">
+          <div class="urow "><span class="ul">Risco basal: faixa plausível</span><div class="upair"><div class="box sm"><input id="pcLoN" inputmode="decimal" autocomplete="off" placeholder="mín."><span>%</span></div><span class="ua">a</span><div class="box sm"><input id="pcHiN" inputmode="decimal" autocomplete="off" placeholder="máx."><span>%</span></div></div></div>
+          <div class="urow um-rrr"><span class="ul">RRR: IC 95%</span><div class="upair"><div class="box sm"><input id="rrrLoN" inputmode="decimal" autocomplete="off" placeholder="mín."><span>%</span></div><span class="ua">a</span><div class="box sm"><input id="rrrHiN" inputmode="decimal" autocomplete="off" placeholder="máx."><span>%</span></div></div></div>
+          <div class="urow um-rr"><span class="ul">RR: IC 95%</span><div class="upair"><div class="box sm"><input id="rrLoN" inputmode="decimal" autocomplete="off" placeholder="mín."></div><span class="ua">a</span><div class="box sm"><input id="rrHiN" inputmode="decimal" autocomplete="off" placeholder="máx."></div></div></div>
+          <div class="urow um-or"><span class="ul">OR: IC 95%</span><div class="upair"><div class="box sm"><input id="orLoN" inputmode="decimal" autocomplete="off" placeholder="mín."></div><span class="ua">a</span><div class="box sm"><input id="orHiN" inputmode="decimal" autocomplete="off" placeholder="máx."></div></div></div>
+          <div class="urow um-trial"><span class="ul">Pacientes no ensaio</span><div class="upair"><div class="box sm"><input id="nCN" inputmode="numeric" autocomplete="off" placeholder="controle"></div><span class="ua">e</span><div class="box sm"><input id="nTN" inputmode="numeric" autocomplete="off" placeholder="tratado"></div></div></div>
+        </div>
+        <p class="hint" id="txUncNote"></p>
+      </div>
+      <div class="sep"></div>
+      <div class="harm-row"><label class="toggle"><input type="checkbox" id="harmOn"> Considerar um dano do tratamento</label><button class="more-btn" data-learn="dano"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button></div>
+      <div id="harmFields" hidden>
+        <div class="inputs two" style="margin-top:8px">
+          <div class="inp"><label for="ariN">Aumento do risco de dano<small>absoluto, mesmo período</small></label><div class="box sm"><input id="ariN" inputmode="decimal" autocomplete="off" placeholder="—"><span>%</span></div></div>
+          <div class="inp"><label for="sevN">Peso do dano<small>vezes pior que o desfecho</small></label><div class="box sm"><input id="sevN" inputmode="decimal" autocomplete="off"><span>×</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stack a-out">
+      <div class="card chal" id="txChal"></div>
+      <div class="readouts">
+        <div class="ro pos"><span class="eyebrow"><i style="background:var(--accent)"></i>NNT</span><b id="roNnt">—</b><span class="s" id="roNntS"></span><span class="rg" id="roNntR"></span></div>
+        <div class="ro"><span class="eyebrow">Redução absoluta</span><b id="roArr">—</b><span class="s" id="roArrS"></span><span class="rg" id="roArrR"></span></div>
+        <div class="ro harm" id="roHarmBox" hidden><span class="eyebrow"><i style="background:var(--harm)"></i>NNH</span><b id="roNnh">—</b><span class="s" id="roNnhS"></span></div>
+        <div class="ro" id="roLhhBox" hidden><span class="eyebrow">Benefício ÷ dano</span><b id="roLhh">—</b><span class="s" id="roLhhS"></span><span class="rg" id="roLhhR"></span></div>
+      </div>
+      <div class="card vcard"><div class="verdict" id="txVerdict"></div><button class="more-btn" data-learn="txres"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button></div>
+    </div>
+
+    <div class="card nomo-card a-nomo">
+      <div class="nomo-h">
+        <span class="eyebrow">Nomograma do NNT</span>
+        <button class="more-btn" data-learn="chat"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button>
+      </div>
+      <div class="nomo-h" style="padding-top:0;justify-content:flex-end">
+        <div class="row"><button class="chip" id="txPin">Fixar paciente</button><button class="chip clear" id="txUnpin" hidden>Limpar</button></div>
+      </div>
+      <div class="nomo-wrap" id="chatWrap"><svg class="nomo" id="chat" aria-label="Nomograma do NNT interativo"></svg></div>
+      <p class="drag-hint">Toque em uma escala para marcar o valor e arraste para ajustar.</p>
+    </div>
+  </div>
+
+  <div class="figs">
+    <div class="card maskable" id="txDotsCard">
+      <div class="card-h"><h3 id="txDotsH">Pacientes como este, tratados</h3><button class="more-btn" data-learn="txdots"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button></div>
+      <p class="lede">O que acontece com cada pessoa, em média, se todas receberem o tratamento.</p>
+      <svg class="dots" id="txDots" viewBox="0 0 400 100" role="img" aria-label="Matriz de pacientes tratados"></svg>
+      <div class="legend" id="txLegend"></div>
+      <p class="sentence" id="txSentence"></p>
+    </div>
+    <div class="card maskable" id="nntCard">
+      <div class="card-h"><h3>NNT conforme o risco basal</h3><button class="more-btn" data-learn="nntcurve"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button></div>
+      <p class="lede">Com o mesmo efeito relativo, quanto menor o risco basal, maior o NNT.</p>
+      <svg class="chart" id="nntCurve" viewBox="0 0 420 320" role="img" aria-label="NNT em função do risco basal"></svg>
+    </div>
+  </div>
+</section>
+</div>
+
+<div id="sheetRoot"></div>
+
+<script>
+/* ================= utilidades ================= */
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const logit=p=>Math.log(p/(1-p)), expit=u=>1/(1+Math.exp(-u));
+const L10=Math.log10, has=v=>v!=null&&isFinite(v);
+const fmt=(x,d)=>x.toLocaleString("pt-BR",{minimumFractionDigits:d,maximumFractionDigits:d}).replace("-","−");
+function pc(p){if(!has(p))return"—";const v=p*100,d=v<1||v>99?2:v<10||v>90?1:0;return fmt(v,d)+"%";}
+function pcx(p){if(!has(p))return"—";const v=p*100;return fmt(v,v<1?2:1)+"%";}
+function lr(x){if(!has(x))return"—";if(x>=100)return fmt(x,0);if(x>=10)return fmt(x,1);if(x>=1)return fmt(x,2);return x.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:3});}
+function nnt(x){return !has(x)||x>1e6?"∞":fmt(Math.ceil(x-1e-9),0);}
+const tickLbl=v=>String(v).replace(".",",");
+function erfc(x){const z=Math.abs(x),t=1/(1+0.5*z);const r=t*Math.exp(-z*z-1.26551223+t*(1.00002368+t*(0.37409196+t*(0.09678418+t*(-0.18628806+t*(0.27886807+t*(-1.13520398+t*(1.48851587+t*(-0.82215223+t*0.17087277)))))))));return x>=0?r:2-r;}
+const Phi=z=>0.5*erfc(-z/Math.SQRT2), pdf=z=>Math.exp(-z*z/2)/Math.sqrt(2*Math.PI);
+function PhiInv(p){const a=[-39.69683028665376,220.9460984245205,-275.9285104469687,138.357751867269,-30.66479806614716,2.506628277459239],b=[-54.47609879822406,161.5858368580409,-155.6989798598866,66.80131188771972,-13.28068155288572],c=[-0.007784894002430293,-0.3223964580411365,-2.400758277161838,-2.549732539343734,4.374664141464968,2.938163982698783],d=[0.007784695709041462,0.3224671290700398,2.445134137142996,3.754408661907416],pl=0.02425;let q,r;
+  if(p<pl){q=Math.sqrt(-2*Math.log(p));return(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  if(p>1-pl){q=Math.sqrt(-2*Math.log(1-p));return-(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  q=p-0.5;r=q*q;return(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);}
+const postOf=(pre,L)=>{const o=pre/(1-pre)*L;return o/(1+o);};
+const parse=s=>{s=String(s).trim().replace(/\s/g,"");if(s==="")return null;
+  if(s.includes(","))s=s.replace(/\./g,"").replace(",",".");else if(/^\d{1,3}(\.\d{3})+$/.test(s))s=s.replace(/\./g,"");
+  if(!/^[-+]?\d*\.?\d+$/.test(s))return NaN;const v=parseFloat(s);return isFinite(v)?v:NaN;};
+const r2=(x,n)=>Math.round(x*10**n)/10**n;
+const show=v=>String(v).replace(".",",");
+
+/* ================= estado ================= */
+const S={
+  tab:"dx",unc:false,names:{dz:"",ts:"",iv:"",oc:"",pr:""},
+  dx:{pre:null,se:null,sp:null,lrp:null,lrn:null,show:"both",thr:false,thrMode:"calc",B:10,H:2,Rt:0,tTest:0.10,tTreat:0.50,tRx:null,calc:null,chain:[],pins:[],
+      ch:{on:false,rev:false,eP:null,eN:null,sig:"",last:null,rounds:[]},
+      preLo:null,preHi:null,seLo:null,seHi:null,spLo:null,spHi:null,nD:null,nH:null,lrpLo:null,lrpHi:null,lrnLo:null,lrnHi:null,uncAuto:false},
+  tx:{pc:null,mode:"rrr",rrr:null,rr:null,or:null,cer:null,eer:null,harm:false,ari:null,sev:1,pins:[],
+      ch:{on:false,rev:false,e:null,sig:"",last:null,rounds:[]},
+      pcLo:null,pcHi:null,rrrLo:null,rrrHi:null,rrLo:null,rrHi:null,orLo:null,orHi:null,nC:null,nT:null,uncAuto:false},
+};
+function fromSeSp(){const d=S.dx;if(has(d.se)&&has(d.sp)){d.lrp=d.se/(1-d.sp);d.lrn=(1-d.se)/d.sp;}else{d.lrp=null;d.lrn=null;}}
+function fromLR(){const d=S.dx;if(has(d.lrp)&&has(d.lrn)&&d.lrp>1&&d.lrn<1){d.sp=(d.lrp-1)/(d.lrp-d.lrn);d.se=d.lrp*(1-d.sp);}else{d.se=null;d.sp=null;}}
+
+/* ================= layout responsivo dos nomogramas ================= */
+function layout(narrow){
+  return narrow?{narrow:true,W:380,H:720,xL:86,xM:196,xR:300,top:78,bot:698,fs:13,ts:13,tag:12.5,hr:11,sub:false}
+               :{narrow:false,W:560,H:680,xL:130,xM:285,xR:440,top:82,bot:656,fs:11.5,ts:12,tag:12,hr:9,sub:true};
+}
+let LY=layout(false);
+
+/* Fagan: u_L = −logit(pré), u_M = ln(LR)/2, u_R = logit(pós) */
+const FGu=6.95;
+const fy=u=>(LY.top+LY.bot)/2-u*(LY.bot-LY.top)/(2*FGu), fu=y=>((LY.top+LY.bot)/2-y)/((LY.bot-LY.top)/(2*FGu));
+const yPre=p=>fy(-logit(p)), yPost=p=>fy(logit(p)), yLR=L=>fy(Math.log(L)/2);
+/* NNT: u_L = log(Pc)+3, u_M = (3−log RRR)/2, u_R = log NNT; a reta garante u_M = (u_L+u_R)/2 */
+const CHmax=3.33,CHmin=-0.03;
+const cy_=u=>LY.top+(CHmax-u)*(LY.bot-LY.top)/(CHmax-CHmin), cu=y=>CHmax-(y-LY.top)*(CHmax-CHmin)/(LY.bot-LY.top);
+const yPc=p=>cy_(L10(p)+3), yRRR=r=>cy_((3-L10(r))/2), yNNT=n=>cy_(L10(n));
+
+const TK={
+  P:[0.1,0.2,0.5,1,2,5,10,20,30,40,50,60,70,80,90,95,98,99,99.5,99.8,99.9], Pm:[0.3,0.4,0.7,3,4,7,15,25,35,45,55,65,75,85,93,97],
+  Pn:[0.1,0.5,1,2,5,10,20,30,50,70,80,90,95,98,99,99.5,99.9], Pnm:[0.2,0.3,0.7,3,4,7,15,25,40,60,85,93,97,99.8],
+  LR:[0.001,0.002,0.005,0.01,0.02,0.05,0.1,0.2,0.5,1,2,5,10,20,50,100,200,500,1000], LRm:[0.003,0.004,0.03,0.04,0.3,0.4,3,4,30,40,300,400],
+  LRn:[0.001,0.01,0.05,0.1,0.2,0.5,1,2,5,10,20,100,1000], LRnm:[0.002,0.005,0.02,0.03,0.3,3,50,200,500],
+  PC:[0.1,0.2,0.5,1,2,3,5,7,10,15,20,30,50,70,100], PCm:[0.3,0.4,0.7,1.5,4,25,40,60,80,90],
+  PCn:[0.1,0.2,0.5,1,2,5,10,20,30,50,100], PCnm:[0.3,0.4,0.7,3,4,7,15,40,60,70,80,90],
+  RR:[1,2,3,5,10,20,30,50,100], RRm:[4,6,7,8,9,15,25,35,40,45,60,70,80,90],
+  NN:[1,2,3,5,7,10,15,20,30,50,70,100,150,200,300,500,700,1000,2000], NNm:[1.5,4,6,8,40,60,80,400,600,800,1500],
+  NNn:[1,2,3,5,10,20,30,50,100,200,300,500,1000,2000], NNnm:[1.5,4,6,7,8,15,40,70,150,400,700,1500],
+};
+
+function scale({x,side,ticks,minor,toY,title,sub,zones}){
+  let s=zones||"";
+  const all=[...ticks,...minor].map(toY),y0=Math.min(...all),y1=Math.max(...all);
+  s+=`<line class="ax" x1="${x}" x2="${x}" y1="${y0}" y2="${y1}"/>`;
+  minor.forEach(v=>{const y=toY(v);s+=`<line class="tk" x1="${x}" x2="${x+side*5}" y1="${y}" y2="${y}"/>`;});
+  ticks.forEach(v=>{const y=toY(v);s+=`<line class="tkM" x1="${x}" x2="${x+side*9}" y1="${y}" y2="${y}"/><text class="tl" x="${x+side*13}" y="${y+LY.fs*0.36}" text-anchor="${side<0?"end":"start"}" style="font-size:${LY.fs}px">${tickLbl(v)}</text>`;});
+  s+=`<text class="ttl" x="${x}" y="30" text-anchor="middle" style="font-size:${LY.ts+1}px">${title}</text>`;
+  if(sub)s+=`<text x="${x}" y="48" text-anchor="middle" style="font-size:${LY.ts-1}px">${sub}</text>`;
+  return s;
+}
+function handle(x,y,cls,label,side){
+  const cw=LY.tag*0.62,w=Math.max(34,label.length*cw+16),tx=side<0?x-LY.hr-7-w:x+LY.hr+7;
+  return `<g class="tag ${cls}"><rect x="${tx}" y="${y-12}" width="${w}" height="24" rx="12"/><text x="${tx+w/2}" y="${y+LY.tag*0.36}" text-anchor="middle" style="font-size:${LY.tag}px">${label}</text></g><circle class="hd ${cls}" cx="${x}" cy="${y}" r="${LY.hr}"/>`;
+}
+const lineThrough=(x1,y1,x2,y2,xa,xb)=>{const m=(y2-y1)/(x2-x1);return[xa,y1+m*(xa-x1),xb,y1+m*(xb-x1)];};
+function setupStrips(wrap,svg,keys,pick,apply){
+  wrap.querySelectorAll(".strip").forEach(e=>e.remove());
+  keys.forEach(sc=>{const d=document.createElement("div");d.className="strip";d.dataset.sc=sc;wrap.appendChild(d);
+    let key=null;
+    const Y=ev=>{const pt=svg.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse()).y;};
+    d.addEventListener("pointerdown",e=>{const ae=document.activeElement;if(ae&&ae.tagName==="INPUT")ae.blur();const y=Y(e);key=pick(sc,y);if(!key)return;e.preventDefault();d.setPointerCapture(e.pointerId);apply(key,y);});
+    d.addEventListener("pointermove",e=>{if(key){e.preventDefault();apply(key,Y(e));}});
+    const end=()=>key=null;d.addEventListener("pointerup",end);d.addEventListener("pointercancel",end);
+  });
+}
+function placeStrips(wrap){
+  const xs={L:LY.xL,M:LY.xM,R:LY.xR},w=LY.narrow?60:56;
+  wrap.querySelectorAll(".strip").forEach(d=>{const x=xs[d.dataset.sc];
+    d.style.left=((x-w/2)/LY.W*100)+"%";d.style.width=(w/LY.W*100)+"%";
+    d.style.top=((LY.top-16)/LY.H*100)+"%";d.style.height=((LY.bot-LY.top+32)/LY.H*100)+"%";});
+}
+
+/* ================= nomes opcionais ================= */
+const nm=k=>esc(String(S.names[k]||"").trim());
+const dzT=()=>nm("dz"), tsT=()=>nm("ts"), ivT=()=>nm("iv"), ocT=()=>nm("oc");
+const prT=()=>{const p=nm("pr").replace(/^(em|por|durante|ao longo de)\s+/i,"");return p;};
+const ocOr=def=>ocT()||def;            // "infarto" ou texto padrão
+const perTx=()=>prT()?` por ${prT()}`:"";   // " por 5 anos"
+const perIn=()=>prT()?` em ${prT()}`:"";    // " em 5 anos"
+const ivTx=()=>ivT()?` com ${ivT()}`:"";    // " com estatina"
+function syncNames(){const n=S.names;[["dzN","dz"],["tsN","ts"],["ivN","iv"],["ocN","oc"],["prN","pr"]].forEach(([id,k])=>{const el=$(id);if(document.activeElement!==el)el.value=n[k];});
+  $("dxNamesSum").textContent=[n.ts,n.dz].filter(x=>x.trim()).join(" · ");$("txNamesSum").textContent=[n.iv,n.oc,n.pr].filter(x=>x.trim()).join(" · ");}
+
+/* ================= incerteza ================= */
+const Z95=1.959964, srt=(a,b)=>a<=b?[a,b]:[b,a];
+function wilson(p,n){const k=p*n,z2=Z95*Z95,den=1+z2/n,c=(p+z2/(2*n))/den,h=Z95*Math.sqrt(p*(1-p)/n+z2/(4*n*n))/den;return[Math.max(0,c-h),Math.min(1,c+h)];}
+function effN(k){const d=S.dx;if(k==="se"&&has(d.nD))return d.nD;if(k==="sp"&&has(d.nH))return d.nH;
+  const lo=d[k+"Lo"],hi=d[k+"Hi"],v=d[k];if(!(has(lo)&&has(hi)&&hi>lo&&has(v)))return null;const w=(hi-lo)/(2*Z95);return v*(1-v)/(w*w);}
+function seSpCI(k){const d=S.dx,v=d[k],n=k==="se"?d.nD:d.nH;if(!has(v))return null;if(has(n))return wilson(v,n);const lo=d[k+"Lo"],hi=d[k+"Hi"];return has(lo)&&has(hi)?srt(lo,hi):null;}
+function lrCI(){const d=S.dx;
+  if(has(d.se)&&has(d.sp)){const nS=effN("se"),nP=effN("sp"),iS=has(nS)?1/nS:0,iP=has(nP)?1/nP:0;if(!iS&&!iP)return{};
+    const a=Math.sqrt((1-d.se)/d.se*iS+d.sp/(1-d.sp)*iP),b=Math.sqrt(d.se/(1-d.se)*iS+(1-d.sp)/d.sp*iP);
+    return{p:[d.lrp*Math.exp(-Z95*a),d.lrp*Math.exp(Z95*a)],n:[d.lrn*Math.exp(-Z95*b),d.lrn*Math.exp(Z95*b)]};}
+  return{p:has(d.lrpLo)&&has(d.lrpHi)?srt(d.lrpLo,d.lrpHi):null,n:has(d.lrnLo)&&has(d.lrnHi)?srt(d.lrnLo,d.lrnHi):null};}
+function dxRanges(){const d=S.dx;if(!S.unc||!has(d.pre))return null;
+  const pl=Math.min(has(d.preLo)?d.preLo:d.pre,d.pre),ph=Math.max(has(d.preHi)?d.preHi:d.pre,d.pre),L=lrCI(),Rg={pre:[pl,ph]};
+  [["lrp","p"],["lrn","n"]].forEach(([k,c])=>{if(!has(d[k]))return;const [a,b]=L[c]||[d[k],d[k]];
+    Rg[k]=[a,b];Rg[k+"Post"]=[postOf(pl,a),postOf(ph,b)];Rg[k+"PostPre"]=[postOf(pl,d[k]),postOf(ph,d[k])];Rg[k+"PostTest"]=[postOf(d.pre,a),postOf(d.pre,b)];});
+  return Rg;}
+function rrrRange(pcv){const t=S.tx;
+  if(t.mode==="rrr")return has(t.rrrLo)&&has(t.rrrHi)?srt(t.rrrLo,t.rrrHi):null;
+  if(t.mode==="rr")return has(t.rrLo)&&has(t.rrHi)?srt(1-t.rrHi,1-t.rrLo):null;
+  if(t.mode==="or"){if(!(has(t.orLo)&&has(t.orHi)&&has(pcv)))return null;const f=o=>1-o/(1-pcv+pcv*o);return srt(f(t.orHi),f(t.orLo));}
+  if(has(t.nC)&&has(t.nT)&&has(t.cer)&&has(t.eer)&&t.eer>0&&t.cer>0){const a=t.eer*t.nT,c=t.cer*t.nC,se=Math.sqrt(Math.max(0,1/a-1/t.nT+1/c-1/t.nC)),rr=t.eer/t.cer;return srt(1-rr*Math.exp(Z95*se),1-rr*Math.exp(-Z95*se));}
+  return null;}
+function txRanges(){const t=S.tx;if(!S.unc||!has(t.pc))return null;const r=rrrFor(t.pc);if(!has(r))return null;
+  const pl=Math.min(has(t.pcLo)?t.pcLo:t.pc,t.pc),ph=Math.max(has(t.pcHi)?t.pcHi:t.pc,t.pc);
+  const rq=q=>rrrRange(q)||[rrrFor(q),rrrFor(q)];const arrs=[];
+  [pl,ph].forEach(q=>rq(q).forEach(x=>arrs.push(q*x)));
+  const aMin=Math.min(...arrs),aMax=Math.max(...arrs);
+  return{pc:[pl,ph],rrr:rq(t.pc),rq,arr:[aMin,aMax],nnt:[1/aMax,aMin>0?1/aMin:Infinity],cross:aMin<=0,nnh:aMin<0?1/-aMin:null,hasCI:!!rrrRange(t.pc)};}
+function fanPath(x0,xm,x1,corners,yMin,yMax){const xs=[];for(let i=0;i<=30;i++)xs.push(x0+(x1-x0)*i/30);
+  const yAt=(c,x)=>clamp(c[0]+(c[1]-c[0])*(x-x0)/(xm-x0),yMin,yMax);
+  const top=xs.map(x=>[x,Math.min(...corners.map(c=>yAt(c,x)))]),bot=xs.map(x=>[x,Math.max(...corners.map(c=>yAt(c,x)))]).reverse();
+  return "M"+[...top,...bot].map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join("L")+"Z";}
+const ubar=(x,y1,y2,cls)=>`<rect class="ub ${cls}" x="${x-6}" y="${Math.min(y1,y2)-2}" width="12" height="${Math.abs(y2-y1)+4}" rx="6"/>`;
+const rng=(a,b,f)=>`${f(a)} a ${f(b)}`;
+function defaultsDx(){const d=S.dx;
+  if(has(d.pre)&&!has(d.preLo)&&!has(d.preHi)){d.preLo=clamp(d.pre*0.6,0.001,0.999);d.preHi=clamp(d.pre*1.4,0.001,0.99);d.uncAuto=true;}
+  if(has(d.se)&&has(d.sp)&&![d.nD,d.nH,d.seLo,d.seHi,d.spLo,d.spHi].some(has)){d.nD=100;d.nH=100;d.uncAuto=true;}
+  else if(!has(d.se)&&has(d.lrp)&&!has(d.lrpLo)){d.lrpLo=d.lrp*0.7;d.lrpHi=d.lrp*1.4;d.uncAuto=true;}
+  if(!has(d.se)&&has(d.lrn)&&!has(d.lrnLo)){d.lrnLo=d.lrn*0.7;d.lrnHi=Math.min(1,d.lrn*1.4);d.uncAuto=true;}}
+function defaultsTx(){const t=S.tx,r=rrrFor(t.pc);
+  if(has(t.pc)&&!has(t.pcLo)&&!has(t.pcHi)){t.pcLo=clamp(t.pc*0.6,0.001,1);t.pcHi=clamp(t.pc*1.4,0.001,1);t.uncAuto=true;}
+  if(has(r)&&!rrrRange(t.pc)){t.uncAuto=true;
+    if(t.mode==="rrr"){t.rrrLo=r*0.4;t.rrrHi=Math.min(0.95,r*1.6);}
+    else if(t.mode==="rr"){t.rrLo=Math.max(0.01,1-Math.min(0.95,r*1.6));t.rrHi=1-r*0.4;}
+    else if(t.mode==="or"){t.orLo=t.or*0.7;t.orHi=Math.min(0.99,t.or*1.35);}
+    else{t.nC=500;t.nT=500;}}}
+function clearUncDx(){Object.assign(S.dx,{preLo:null,preHi:null,seLo:null,seHi:null,spLo:null,spHi:null,nD:null,nH:null,lrpLo:null,lrpHi:null,lrnLo:null,lrnHi:null,uncAuto:false});}
+function clearUncTx(){Object.assign(S.tx,{pcLo:null,pcHi:null,rrrLo:null,rrrHi:null,rrLo:null,rrHi:null,orLo:null,orHi:null,nC:null,nT:null,uncAuto:false});}
+
+/* ================= FAGAN ================= */
+function zoneRects(x,toY,side){const d=S.dx;if(!d.thr||(d.thrMode==="calc"&&!isCalc()))return"";const w=12,yA=toY(0.001),yB=toY(0.999);
+  const r=(a,b,c)=>`<rect class="${c}" x="${x-w/2}" y="${Math.min(a,b)}" width="${w}" height="${Math.abs(b-a)}" rx="2"/>`;
+  if(isCalc()&&side==="post"){const yX=toY(d.tRx);return r(yA,yX,"z1")+r(yX,yB,"z3");}
+  const yT=toY(d.tTest),yR=toY(d.tTreat);return r(yA,yT,"z1")+(d.tTreat>d.tTest?r(yT,yR,"z2"):"")+r(yR,yB,"z3");}
+function drawFagan(){
+  const d=S.dx,svg=$("fagan"),n=LY.narrow;
+  svg.setAttribute("viewBox",`0 0 ${LY.W} ${LY.H}`);
+  let s=scale({x:LY.xL,side:-1,ticks:n?TK.Pn:TK.P,minor:n?TK.Pnm:TK.Pm,toY:v=>yPre(v/100),title:"Pré-teste",sub:LY.sub&&"probabilidade (%)",zones:zoneRects(LY.xL,yPre,"pre")})
+    +scale({x:LY.xM,side:1,ticks:n?TK.LRn:TK.LR,minor:n?TK.LRnm:TK.LRm,toY:yLR,title:"LR",sub:LY.sub&&"razão de verossimilhança"})
+    +scale({x:LY.xR,side:1,ticks:n?TK.Pn:TK.P,minor:n?TK.Pnm:TK.Pm,toY:v=>yPost(v/100),title:"Pós-teste",sub:LY.sub&&"probabilidade (%)",zones:zoneRects(LY.xR,yPost,"post")});
+  if(n)s+=`<text x="${LY.xL}" y="48" text-anchor="middle" style="font-size:12px">(%)</text><text x="${LY.xR}" y="48" text-anchor="middle" style="font-size:12px">(%)</text>`;
+  d.pins.forEach((p,i)=>{[["lrp","pos"],["lrn","neg"]].forEach(([k,c])=>{if(!has(p[k])||(d.show!=="both"&&d.show!==c))return;
+    const [x1,y1,x2,y2]=lineThrough(LY.xL,yPre(p.pre),LY.xM,yLR(clamp(p[k],0.001,1000)),LY.xL,LY.xR);s+=`<line class="pin" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;});
+    s+=`<text class="pinT" x="${LY.xL+10}" y="${yPre(p.pre)-8}">P${i+1}</text>`;});
+  const hs=[];
+  const M=dxMasked(),UR=dxRanges();
+  if(UR){s+=ubar(LY.xL,yPre(UR.pre[0]),yPre(UR.pre[1]),"pre");
+    [["lrp","pos"],["lrn","neg"]].forEach(([k,c])=>{if(!UR[k]||(d.show!=="both"&&d.show!==c))return;const Lr=UR[k].map(x=>clamp(x,0.001,1000));
+      s+=ubar(LY.xM,yLR(Lr[0]),yLR(Lr[1]),c);
+      if(!M){const cs=[];UR.pre.forEach(p=>Lr.forEach(L=>cs.push([yPre(p),yLR(L)])));s+=`<path class="fan ${c}" d="${fanPath(LY.xL,LY.xM,LY.xR,cs,LY.top-20,LY.bot+20)}"/>`;
+        const P=UR[k+"Post"].map(x=>clamp(x,0.001,0.999));s+=ubar(LY.xR,yPost(P[0]),yPost(P[1]),c);}});}
+  const one=(k,c,sg)=>{if(!has(d[k])||(d.show!=="both"&&d.show!==c))return;const L=clamp(d[k],0.001,1000),yM=yLR(L);
+    if(has(d.pre)&&!M){const post=postOf(d.pre,d[k]),[x1,y1,x2,y2]=lineThrough(LY.xL,yPre(d.pre),LY.xM,yM,LY.xL,LY.xR);
+      s+=`<line class="ln ${c}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${clamp(y2,LY.top-30,LY.bot+30)}"/>`;
+      hs.push(handle(LY.xR,clamp(yPost(clamp(post,0.001,0.999)),LY.top,LY.bot),c,pc(post),1));}
+    hs.push(handle(LY.xM,yM,c,`LR${sg} ${lr(d[k])}`,1));};
+  one("lrp","pos","+");one("lrn","neg","−");
+  s+=hs.join("");
+  if(has(d.pre))s+=handle(LY.xL,yPre(d.pre),"pre",pc(d.pre),-1);
+  if(!has(d.pre)&&!has(d.lrp)&&!has(d.lrn))s+=`<text class="ghost" x="${LY.W/2}" y="${LY.H-6}" text-anchor="middle" style="font-size:13px">Comece tocando na escala da pré-teste</text>`;
+  else if(M)s+=`<text class="ghost" x="${LY.W/2}" y="${LY.H-6}" text-anchor="middle" style="font-size:13px">Linha oculta até você revelar sua estimativa</text>`;
+  svg.innerHTML=s;placeStrips($("faganWrap"));
+}
+setupStrips($("faganWrap"),$("fagan"),["L","M","R"],(sc,y)=>{
+  const d=S.dx;
+  if(sc==="L")return"pre";
+  if(sc==="M"){if(d.show==="pos")return"lrp";if(d.show==="neg")return"lrn";
+    if(has(d.lrp)&&has(d.lrn)){const a=Math.abs(y-yLR(clamp(d.lrp,.001,1000))),b=Math.abs(y-yLR(clamp(d.lrn,.001,1000)));if(Math.min(a,b)<40)return a<=b?"lrp":"lrn";}
+    return fu(y)>=0?"lrp":"lrn";}
+  if(sc==="R"){if(!has(d.pre)||dxMasked())return null;const p=expit(fu(y));
+    if(d.show==="pos")return"post_lrp";if(d.show==="neg")return"post_lrn";return p>=d.pre?"post_lrp":"post_lrn";}
+},(k,y)=>{
+  const d=S.dx;
+  if(k==="pre")d.pre=clamp(expit(-fu(y)),0.001,0.999);
+  else if(k==="lrp"){d.lrp=clamp(Math.exp(2*fu(y)),1,1000);fromLR();}
+  else if(k==="lrn"){d.lrn=clamp(Math.exp(2*fu(y)),0.001,1);fromLR();}
+  else{const kk=k.slice(5),post=clamp(expit(fu(y)),0.001,0.999),L=(post/(1-post))/(d.pre/(1-d.pre));d[kk]=kk==="lrp"?clamp(L,1,1000):clamp(L,0.001,1);fromLR();}
+  d.chain=[];renderDx(true);
+});
+
+/* ================= NNT ================= */
+function rrrFor(p){const t=S.tx;
+  if(t.mode==="rrr")return t.rrr;
+  if(t.mode==="rr")return has(t.rr)?1-t.rr:null;
+  if(t.mode==="or")return has(t.or)&&has(p)?1-t.or/(1-p+p*t.or):null;
+  return has(t.cer)&&has(t.eer)&&t.cer>0?1-t.eer/t.cer:null;}
+function setRRR(r){const t=S.tx;
+  if(t.mode==="rrr")t.rrr=r;else if(t.mode==="rr")t.rr=1-r;
+  else if(t.mode==="or"){if(has(t.pc)){const rr=1-r;t.or=rr*(1-t.pc)/(1-rr*t.pc);}else{t.mode="rrr";t.rrr=r;}}
+  else{if(has(t.cer))t.eer=t.cer*(1-r);else{t.mode="rrr";t.rrr=r;}}}
+function drawChat(){
+  const t=S.tx,n=LY.narrow,svg=$("chat");svg.setAttribute("viewBox",`0 0 ${LY.W} ${LY.H}`);
+  let s=scale({x:LY.xL,side:-1,ticks:n?TK.PCn:TK.PC,minor:n?TK.PCnm:TK.PCm,toY:v=>yPc(v/100),title:"Risco basal",sub:LY.sub&&"sem tratamento (%)"})
+   +scale({x:LY.xM,side:1,ticks:TK.RR,minor:TK.RRm,toY:v=>yRRR(v/100),title:"RRR",sub:LY.sub&&"redução relativa (%)"})
+   +scale({x:LY.xR,side:1,ticks:n?TK.NNn:TK.NN,minor:n?TK.NNnm:TK.NNm,toY:yNNT,title:"NNT",sub:LY.sub&&"pacientes tratados"});
+  if(n)s+=`<text x="${LY.xL}" y="48" text-anchor="middle" style="font-size:12px">(%)</text><text x="${LY.xM}" y="48" text-anchor="middle" style="font-size:12px">(%)</text>`;
+  t.pins.forEach((p,i)=>{const [x1,y1,x2,y2]=lineThrough(LY.xL,yPc(p.pc),LY.xM,yRRR(p.rrr),LY.xL,LY.xR);s+=`<line class="pin" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><text class="pinT" x="${LY.xL+10}" y="${yPc(p.pc)-8}">P${i+1}</text>`;});
+  const r=rrrFor(t.pc),ok=has(r)&&r>0,hs=[],M=txMasked(),UT=txRanges();
+  if(UT&&ok){s+=ubar(LY.xL,yPc(UT.pc[0]),yPc(UT.pc[1]),"pre");const rq=UT.rrr.map(x=>clamp(x,0.01,1));s+=ubar(LY.xM,yRRR(rq[0]),yRRR(rq[1]),"pos");
+    if(!M){const cs=[];UT.pc.forEach(q=>UT.rq(q).forEach(x=>cs.push([yPc(q),yRRR(clamp(x,0.01,1))])));s+=`<path class="fan pos" d="${fanPath(LY.xL,LY.xM,LY.xR,cs,LY.top-20,LY.bot+20)}"/>`;
+      s+=ubar(LY.xR,yNNT(clamp(UT.nnt[0],1,2000)),yNNT(clamp(UT.nnt[1],1,2000)),"pos");}}
+  if(ok){const rr=clamp(r,0.01,1);
+    if(has(t.pc)&&!M){const N=1/(t.pc*r),[x1,y1,x2,y2]=lineThrough(LY.xL,yPc(t.pc),LY.xM,yRRR(rr),LY.xL,LY.xR);
+      s+=`<line class="ln pos" x1="${x1}" y1="${y1}" x2="${x2}" y2="${clamp(y2,LY.top-30,LY.bot+30)}"/>`;
+      hs.push(handle(LY.xR,clamp(yNNT(N),LY.top,LY.bot),"pos",nnt(N),1));}
+    hs.push(handle(LY.xM,yRRR(rr),"pos",`${fmt(r*100,r<0.1?1:0)}%`,1));}
+  s+=hs.join("");
+  if(has(t.pc))s+=handle(LY.xL,yPc(t.pc),"pre",pcx(t.pc),-1);
+  if(!has(t.pc)&&!ok)s+=`<text class="ghost" x="${LY.W/2}" y="${LY.H-6}" text-anchor="middle" style="font-size:13px">Comece tocando na escala do risco basal</text>`;
+  else if(M)s+=`<text class="ghost" x="${LY.W/2}" y="${LY.H-6}" text-anchor="middle" style="font-size:13px">Linha oculta até você revelar sua estimativa</text>`;
+  svg.innerHTML=s;placeStrips($("chatWrap"));
+}
+setupStrips($("chatWrap"),$("chat"),["L","M","R"],(sc)=>sc==="L"?"pc":sc==="M"?"rrr":(has(S.tx.pc)&&!txMasked()?"nnt":null),(k,y)=>{
+  const t=S.tx;
+  if(k==="pc")t.pc=clamp(Math.pow(10,cu(y)-3),0.001,1);
+  else{const r=k==="rrr"?Math.pow(10,3-2*cu(y)):1/(t.pc*Math.pow(10,cu(y)));setRRR(clamp(r,0.01,1));}
+  renderTx(true);
+});
+
+/* ================= DIAGNÓSTICO: leitura ================= */
+const zoneOf=p=>p<S.dx.tTest?1:p<S.dx.tTreat?2:3;
+const ZN={1:"Descartar",2:"Seguir investigando",3:"Tratar / confirmar"};
+const isCalc=()=>S.dx.thr&&S.dx.thrMode==="calc"&&S.dx.calc&&!S.dx.calc.err;
+function postPill(p){if(!S.dx.thr||!has(p))return"";
+  if(isCalc()){const t=p>=S.dx.tRx;return `<span class="zonepill zp${t?3:1}">${t?"Tratar":"Não tratar"}</span>`;}
+  if(S.dx.thrMode==="calc")return"";return `<span class="zonepill zp${zoneOf(p)}">${ZN[zoneOf(p)]}</span>`;}
+function computeThr(){const d=S.dx;d.calc=null;d.tRx=null;
+  if(!d.thr||d.thrMode!=="calc")return;
+  const B=d.B,H=d.H,Rt=has(d.Rt)?d.Rt:0;
+  if(!(has(B)&&has(H)&&B>0&&H>0)){d.calc={err:true};return;}
+  const Tx=H/(H+B);let Tt=Tx,Ttr=Tx,noTest=false,needTest=false;
+  if(has(d.se)&&has(d.sp)&&d.se+d.sp>1){Tt=((1-d.sp)*H+Rt)/((1-d.sp)*H+d.se*B);Ttr=(d.sp*H-Rt)/(d.sp*H+(1-d.se)*B);if(!(Tt<Ttr)){noTest=true;Tt=Ttr=Tx;}}
+  else needTest=true;
+  d.tRx=clamp(Tx,0.001,0.999);d.tTest=clamp(Tt,0.001,0.999);d.tTreat=clamp(Ttr,0.001,0.999);
+  d.calc={Tx,Tt,Ttr,noTest,needTest};}
+const dxSig=()=>{const d=S.dx;return [d.pre,d.lrp,d.lrn].map(x=>has(x)?x.toPrecision(6):"-").join("|");};
+const dxMasked=()=>S.dx.ch.on&&!S.dx.ch.rev;
+function renderDx(fromDrag){
+  const d=S.dx,pp=has(d.pre)&&has(d.lrp)?postOf(d.pre,d.lrp):null,pn=has(d.pre)&&has(d.lrn)?postOf(d.pre,d.lrn):null;
+  const ch=d.ch;if(ch.on&&ch.sig!==dxSig()){ch.rev=false;ch.eP=null;ch.eN=null;ch.sig=dxSig();}
+  computeThr();
+  const M=dxMasked();
+  drawFagan();
+  $("roPos").textContent=M&&has(pp)?"?":pc(pp);$("roNeg").textContent=M&&has(pn)?"?":pc(pn);
+  $("roPosBox").classList.toggle("empty",!has(pp));$("roNegBox").classList.toggle("empty",!has(pn));
+  $("roPosS").textContent=has(pp)?`LR+ ${lr(d.lrp)} · ${pp>=d.pre?"+":""}${fmt((pp-d.pre)*100,1)} p.p.`:has(d.lrp)?"falta a pré-teste":"falta LR+ ou Se e Esp";
+  $("roNegS").textContent=has(pn)?`LR− ${lr(d.lrn)} · ${fmt((pn-d.pre)*100,1)} p.p.`:has(d.lrn)?"falta a pré-teste":"falta LR− ou Se e Esp";
+  $("roPosZ").innerHTML=M?"":postPill(pp);$("roNegZ").innerHTML=M?"":postPill(pn);
+  if(M){if(has(pp))$("roPosS").textContent="estime no desafio";if(has(pn))$("roNegS").textContent="estime no desafio";}
+  // veredito
+  const v=$("dxVerdict");
+  if(M&&(has(pp)||has(pn))){v.className="verdict idle";v.innerHTML=`<span class="eyebrow">Desafio em andamento</span><p>A leitura aparece depois que você revelar sua estimativa.</p>`;}
+  else if(!has(d.pre)){v.className="verdict idle";v.innerHTML=`<span class="eyebrow">Como começar</span><p>Informe a probabilidade de o paciente ter a doença antes do exame. Ela pode vir da prevalência, de um escore clínico ou da sua avaliação.</p>`;}
+  else if(!has(pp)&&!has(pn)){v.className="verdict idle";v.innerHTML=`<span class="eyebrow">Falta o teste</span><p>Agora informe a sensibilidade e a especificidade do exame, ou as LRs.</p>`;}
+  else if(d.thr&&d.thrMode==="calc"){
+    const c=d.calc,z0=zoneOf(d.pre);let m,u=null;
+    if(!c||c.err)m="Informe o benefício e o dano do tratamento para calcular os limiares.";
+    else if(c.needTest)m=`Sem sensibilidade e especificidade, só dá para calcular o limiar de tratamento: ${pc(d.tRx)}. A pré-teste está ${d.pre>=d.tRx?"acima dele (tratar)":"abaixo dele (não tratar)"}.`;
+    else if(c.noTest){u=false;m=`Com este exame e estes riscos, não existe faixa em que testar compense. Trate se a probabilidade passar de ${pc(d.tRx)}; abaixo disso, não trate.`;}
+    else if(z0===1){u=false;m=`A pré-teste (${pc(d.pre)}) está abaixo do limiar de teste (${pc(d.tTest)}). ${has(pp)&&pp<d.tRx?`Nem um positivo (${pc(pp)}) passaria do limiar de tratamento (${pc(d.tRx)}).`:"O ganho esperado do exame não cobre o risco dele."} Não testar, não tratar.`;}
+    else if(z0===3){u=false;m=`A pré-teste (${pc(d.pre)}) está acima do limiar de teste-tratamento (${pc(d.tTreat)}). ${has(pn)&&pn>=d.tRx?`Nem um negativo (${pc(pn)}) cairia abaixo do limiar de tratamento (${pc(d.tRx)}).`:"O ganho esperado do exame não cobre o risco dele."} Tratar sem testar.`;}
+    else{u=true;m=`A pré-teste (${pc(d.pre)}) está entre ${pc(d.tTest)} e ${pc(d.tTreat)}: vale testar. Positivo → ${pc(pp)}, ${pp>=d.tRx?"acima":"abaixo"} do limiar de tratamento (${pc(d.tRx)}): ${pp>=d.tRx?"tratar":"não tratar"}. Negativo → ${pc(pn)}: ${pn>=d.tRx?"tratar":"não tratar"}.`;}
+    v.className="verdict"+(u===false?" warn":u===null?" idle":"");v.innerHTML=`<span class="eyebrow">${u===true?"Testar compensa":u===false?"Testar não compensa":"Limiares"}</span><p>${m}</p>`;
+  }
+  else if(d.thr){
+    const z0=zoneOf(d.pre),zp=has(pp)?zoneOf(pp):z0,zn=has(pn)?zoneOf(pn):z0,useful=zp!==z0||zn!==z0;let m;
+    if(z0===1)m=`A pré-teste (${pc(d.pre)}) já está abaixo do limiar de teste (${pc(d.tTest)}). ${zp!==1?"Um positivo levaria a "+pc(pp)+", mas testar aqui tende a gerar mais falsos positivos que diagnósticos.":"Nem um positivo tiraria o paciente dessa zona."}`;
+    else if(z0===3)m=`A pré-teste (${pc(d.pre)}) já está acima do limiar de tratamento (${pc(d.tTreat)}). ${zn!==3?"Um negativo baixaria para "+pc(pn)+", o que reabriria a dúvida.":"Nem um negativo tiraria o paciente dessa zona."}`;
+    else m=`Zona de incerteza (${pc(d.tTest)} a ${pc(d.tTreat)}). `+(zp===3&&zn===1?"Os dois resultados decidem: positivo leva a tratar, negativo permite descartar.":zp===3?`Um positivo leva acima do limiar de tratamento; um negativo não descarta (${pc(pn)}).`:zn===1?`Um negativo descarta; um positivo ainda não alcança o limiar de tratamento (${pc(pp)}).`:"Nenhum resultado tira o paciente da zona de incerteza. Considere um teste com LRs mais extremas.");
+    v.className="verdict"+(useful?"":" warn");v.innerHTML=`<span class="eyebrow">${useful?"O teste pode mudar a conduta":"O teste dificilmente muda a conduta"}</span><p>${m}</p>`;
+  }else{v.className="verdict";v.innerHTML=`<span class="eyebrow">Leitura</span><p>Com pré-teste de ${pc(d.pre)}${dzT()?` para ${dzT()}`:""}${has(pp)?`, um ${tsT()?`resultado positivo de ${tsT()}`:"positivo"} leva a ${pc(pp)}`:""}${has(pn)?`${has(pp)?" e":", "} um ${tsT()?"resultado negativo":"negativo"}, a ${pc(pn)}`:""}. Ative os limiares para saber se isso muda a conduta.</p>`;}
+  // incerteza: leituras e robustez
+  const UR=dxRanges();
+  $("roPosR").textContent=UR&&UR.lrp&&!M?"faixa: "+rng(UR.lrpPost[0],UR.lrpPost[1],pc):"";
+  $("roNegR").textContent=UR&&UR.lrn&&!M?"faixa: "+rng(UR.lrnPost[0],UR.lrnPost[1],pc):"";
+  if(UR&&!M&&(UR.lrp||UR.lrn)){
+    let t=`<b>Com a incerteza:</b> `+[UR.lrp?`o positivo fica entre ${pc(UR.lrpPost[0])} e ${pc(UR.lrpPost[1])}`:"",UR.lrn?`o negativo entre ${pc(UR.lrnPost[0])} e ${pc(UR.lrnPost[1])}`:""].filter(Boolean).join("; ")+".";
+    const side=(r,th)=>r[0]>=th?1:r[1]<th?-1:0;
+    if(d.thr&&isCalc()){const parts=[];
+      if(UR.lrp){const k=side(UR.lrpPost,d.tRx);parts.push(k?`após um positivo, a conduta (${k>0?"tratar":"não tratar"}) se mantém em toda a faixa`:`após um positivo, a faixa cruza o limiar de tratamento (${pc(d.tRx)}): a decisão depende de onde o paciente realmente está`);}
+      if(UR.lrn){const k=side(UR.lrnPost,d.tRx);parts.push(k?`após um negativo, a conduta (${k>0?"tratar":"não tratar"}) se mantém`:`após um negativo, a faixa cruza o limiar de tratamento`);}
+      t+=" "+parts.join("; ").replace(/^./,c=>c.toUpperCase())+".";}
+    else if(d.thr&&d.thrMode==="manual"){const zs=r=>new Set([zoneOf(r[0]),zoneOf(r[1])]).size>1;const cr=[UR.lrp&&zs(UR.lrpPost)?"positivo":null,UR.lrn&&zs(UR.lrnPost)?"negativo":null].filter(Boolean);
+      t+=cr.length?` A faixa do resultado ${cr.join(" e do ")} atravessa mais de uma zona de decisão: a conclusão não é robusta.`:" As faixas ficam dentro das mesmas zonas: a conclusão é robusta.";}
+    else{const dom=UR.lrp?((UR.lrpPostPre[1]-UR.lrpPostPre[0])>(UR.lrpPostTest[1]-UR.lrpPostTest[0])?"da pré-teste":"do teste"):null;if(dom)t+=` A maior parte da incerteza no positivo vem ${dom}.`;}
+    v.insertAdjacentHTML("beforeend",`<p class="robust">${t}</p>`);}
+  // dica
+  const h=$("dxHint");h.classList.remove("warn");
+  if(has(d.se)&&has(d.sp)&&d.se+d.sp<=1){h.textContent="Com Se + Esp ≤ 100%, o teste não separa doentes de sadios: um positivo não aumenta a suspeita.";h.classList.add("warn");}
+  else if(has(d.lrp)&&has(d.lrn)&&has(d.se))h.textContent=`LR+ = Se ÷ (1 − Esp) = ${lr(d.lrp)}   ·   LR− = (1 − Se) ÷ Esp = ${lr(d.lrn)}`;
+  else if((has(d.lrp)||has(d.lrn))&&!has(d.se))h.textContent="Com só as LRs, a matriz de pacientes precisa das duas (LR+ > 1 e LR− < 1) para estimar Se e Esp.";
+  else h.textContent="";
+  // cadeia
+  const c=$("chain"),first=d.chain.length?d.chain[0].pre:d.pre;
+  c.innerHTML=has(first)?[`<span class="st">${pc(first)}</span>`,...d.chain.map(x=>`<span class="ar">→ ${x.sign==="+"?"positivo":"negativo"} (LR ${lr(x.L)}) →</span><span class="st">${pc(x.post)}</span>`)].join("")+(d.chain.length?"":`<span class="ar">Aplique um resultado para encadear o próximo teste.</span>`):`<span class="ar">Disponível depois de informar pré-teste e teste.</span>`;
+  $("usePos").disabled=!has(pp)||M;$("useNeg").disabled=!has(pn)||M;$("chainUndo").disabled=!d.chain.length;$("dxUnpin").hidden=!d.pins.length;$("dxPin").disabled=!has(d.pre)||(!has(d.lrp)&&!has(d.lrn));
+  document.querySelectorAll("#dxShow button").forEach(b=>b.classList.toggle("on",b.dataset.v===d.show));
+  $("thrFields").hidden=!d.thr;$("thrOn").checked=d.thr;
+  document.querySelectorAll("#thrMode button").forEach(b=>b.classList.toggle("on",b.dataset.v===d.thrMode));
+  $("thrCalc").hidden=d.thrMode!=="calc";$("thrManual").hidden=d.thrMode!=="manual";
+  renderThrOut();renderUncDx();syncNames();
+  $("dxDotsCard").classList.toggle("masked",M&&has(pp));$("leafCard").classList.toggle("masked",M&&has(pp));
+  syncDx();drawDxDots();drawLeaf(pp,pn);renderDxChal(pp,pn);
+  if(!CUTTING)S.dx.dp=has(d.se)&&has(d.sp)&&d.se+d.sp>1?PhiInv(d.se)+PhiInv(d.sp):null;
+  drawROC();
+}
+let CUTTING=false;
+function setCut(c){const d=S.dx;if(!has(d.dp))return;d.sp=clamp(Phi(c),0.001,0.999);d.se=clamp(Phi(d.dp-c),0.001,0.999);fromSeSp();d.chain=[];CUTTING=true;renderDx();CUTTING=false;markOn("dxPresets",null);}
+function drawROC(){
+  const d=S.dx,dp=d.dp,ok=has(dp)&&has(d.se)&&has(d.sp);
+  /* distribuições */
+  {const W=420,H=190,L=8,R=8,T=22,B=30,iw=W-L-R,ih=H-T-B,D=ok?dp:2,lo=-3.6,hi=D+3.6,X=z=>L+(z-lo)/(hi-lo)*iw,Y=v=>T+ih-v/0.4*ih;
+    const area=(mu,a,b)=>{let p=`M${X(a).toFixed(1)},${Y(0)}`;for(let i=0;i<=120;i++){const z=a+(b-a)*i/120;p+=`L${X(z).toFixed(1)},${Y(pdf(z-mu)).toFixed(1)}`;}return p+`L${X(b).toFixed(1)},${Y(0)}Z`;};
+    let s="";
+    if(!ok){s=`<path class="pdfH" d="${area(0,lo,hi)}" opacity=".35"/><path class="pdfD" d="${area(D,lo,hi)}" opacity=".35"/><text x="${W/2}" y="${T+ih/2}" text-anchor="middle" style="fill:var(--muted);font-style:italic">Informe sensibilidade e especificidade</text>`;}
+    else{const c=PhiInv(d.sp);
+      s+=`<path class="pdfH" d="${area(0,lo,hi)}"/><path class="pdfD" d="${area(dp,lo,hi)}"/>`;
+      s+=`<path class="fpA" d="${area(0,Math.max(c,lo),hi)}"/><path class="fnA" d="${area(dp,lo,Math.min(c,hi))}"/>`;
+      s+=`<text x="${X(0)}" y="${Y(0.4)-6}" text-anchor="middle" style="fill:var(--fg);font-weight:600">Sem doença</text><text x="${X(dp)}" y="${Y(0.4)-6}" text-anchor="middle" style="fill:var(--accent);font-weight:600">Com doença</text>`;
+      const xc=X(clamp(c,lo,hi));s+=`<line class="cutL" x1="${xc}" x2="${xc}" y1="${T-8}" y2="${Y(0)}"/>`;
+      s+=`<text x="${xc-8}" y="${H-10}" text-anchor="end">teste −</text><text x="${xc+8}" y="${H-10}">teste +</text>`;}
+    s+=`<line class="a" x1="${L}" x2="${W-R}" y1="${Y(0)}" y2="${Y(0)}"/>`;
+    $("dist").innerHTML=s;
+    $("distLegend").innerHTML=ok?`<span><i style="background:var(--alt);opacity:.7"></i>Falsos positivos: ${pcx(1-d.sp)} dos sadios</span><span><i style="background:var(--accent);opacity:.6"></i>Falsos negativos: ${pcx(1-d.se)} dos doentes</span>`:"";}
+  /* ROC */
+  {const W=360,H=350,L=46,R=12,T=12,B=48,iw=W-L-R,ih=H-T-B,X=f=>L+f*iw,Y=v=>T+ih-v*ih;let s="";
+    [0,.2,.4,.6,.8,1].forEach(v=>s+=`<line class="g" x1="${X(v)}" x2="${X(v)}" y1="${T}" y2="${T+ih}"/><line class="g" x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${X(v)}" y="${T+ih+18}" text-anchor="middle">${fmt(v,1)}</text><text x="${L-8}" y="${Y(v)+4}" text-anchor="end">${fmt(v,1)}</text>`);
+    s+=`<line class="dg" x1="${X(0)}" y1="${Y(0)}" x2="${X(1)}" y2="${Y(1)}"/><text x="${X(.7)}" y="${Y(.7)+18}" style="font-size:11px">acaso</text>`;
+    if(ok){let p="",a=`M${X(0)},${Y(0)}`;for(let i=0;i<=200;i++){const f=clamp(i/200,1e-6,1-1e-6),v=Phi(dp+PhiInv(f));p+=(i?"L":"M")+X(i/200).toFixed(1)+","+Y(v).toFixed(1);a+=`L${X(i/200).toFixed(1)},${Y(v).toFixed(1)}`;}
+      s+=`<path class="aucA" d="${a}L${X(1)},${Y(0)}Z"/><path class="cp" d="${p}"/>`;
+      const f0=1-d.sp,s0=d.se,fy=Phi(-dp/2),sy=Phi(dp/2);
+      s+=`<line x1="${X(0)}" y1="${Y(0)}" x2="${X(f0)}" y2="${Y(s0)}" stroke="var(--accent)" stroke-dasharray="3 3" stroke-width="1.4"/><line x1="${X(f0)}" y1="${Y(s0)}" x2="${X(1)}" y2="${Y(1)}" stroke="var(--alt)" stroke-dasharray="3 3" stroke-width="1.4"/>`;
+      s+=`<line x1="${X(f0)}" y1="${Y(f0)}" x2="${X(f0)}" y2="${Y(s0)}" stroke="var(--fg)" stroke-width="1" stroke-dasharray="1 3"/>`;
+      s+=`<circle cx="${X(fy)}" cy="${Y(sy)}" r="6" fill="none" stroke="var(--fg)" stroke-width="1.5"/><text x="${X(fy)+9}" y="${Y(sy)+16}" style="font-size:11px">Youden</text>`;
+      if(S.unc){const cS=seSpCI("se"),cP=seSpCI("sp");if(cS&&cP)s+=`<rect x="${X(1-cP[1])}" y="${Y(cS[1])}" width="${Math.max(2,X(1-cP[0])-X(1-cP[1]))}" height="${Math.max(2,Y(cS[0])-Y(cS[1]))}" fill="var(--ink)" fill-opacity=".08" stroke="var(--ink)" stroke-dasharray="3 2"/>`;}
+      s+=`<circle cx="${X(f0)}" cy="${Y(s0)}" r="7.5" fill="var(--ink)" stroke="var(--surface)" stroke-width="2.5"/>`;
+      s+=`<text x="${Math.min(X(f0)+12,W-110)}" y="${Math.max(Y(s0)-10,T+12)}" style="fill:var(--fg);font-weight:600">Se ${pcx(s0)} · Esp ${pcx(d.sp)}</text>`;}
+    else s+=`<text x="${L+iw/2}" y="${T+ih*0.45}" text-anchor="middle" style="fill:var(--muted);font-style:italic">A curva aparece com Se e Esp</text>`;
+    s+=`<text x="${L+iw/2}" y="${H-6}" text-anchor="middle">1 − especificidade (falsos positivos)</text><text x="12" y="${T+ih/2}" transform="rotate(-90 12 ${T+ih/2})" text-anchor="middle">sensibilidade</text>`;
+    $("roc").innerHTML=s;}
+  /* números */
+  const cutEl=$("cutR");cutEl.disabled=!ok;
+  if(ok&&document.activeElement!==cutEl)cutEl.value=Math.round((PhiInv(d.sp)+3)/(dp+6)*1000);
+  $("rocStats").innerHTML=ok?`<div class="rs"><span>Área sob a curva</span><b>${fmt(Phi(dp/Math.SQRT2),2)}</b><small>${Phi(dp/Math.SQRT2)>=.9?"excelente":Phi(dp/Math.SQRT2)>=.8?"boa":Phi(dp/Math.SQRT2)>=.7?"aceitável":"fraca"}</small></div><div class="rs"><span>Índice de Youden</span><b>${fmt(d.se+d.sp-1,2)}</b><small>Se + Esp − 1</small></div><div class="rs"><span>LR+</span><b>${lr(d.lrp)}</b><small>inclinação da linha verde</small></div><div class="rs"><span>LR−</span><b>${lr(d.lrn)}</b><small>inclinação da linha laranja</small></div>`
+    :`<p class="empty-note" style="grid-column:1/-1;margin:0">Informe sensibilidade e especificidade (com soma acima de 100%) para desenhar a curva.</p>`;
+}
+function setIf(id,v){const el=$(id);if(document.activeElement!==el)el.value=v==null?"":v;}
+function syncDx(){const d=S.dx;
+  setIf("preN",has(d.pre)?show(r2(d.pre*100,d.pre<0.01?2:1)):"");
+  setIf("seN",has(d.se)?show(r2(d.se*100,1)):"");setIf("spN",has(d.sp)?show(r2(d.sp*100,1)):"");
+  setIf("lrpN",has(d.lrp)?show(r2(d.lrp,d.lrp>=10?1:2)):"");setIf("lrnN",has(d.lrn)?show(r2(d.lrn,3)):"");
+  setIf("tTestN",show(r2(d.tTest*100,1)));setIf("tTreatN",show(r2(d.tTreat*100,1)));
+  setIf("thrB",has(d.B)?show(d.B):"");setIf("thrH",has(d.H)?show(d.H):"");setIf("thrRt",has(d.Rt)&&d.Rt?show(d.Rt):"");
+  const pp1=x=>has(x)?show(r2(x*100,1)):"",f2=x=>has(x)?show(r2(x,x>=10?1:x>=1?2:3)):"";
+  setIf("preLoN",pp1(d.preLo));setIf("preHiN",pp1(d.preHi));
+  const cS=seSpCI("se"),cP=seSpCI("sp");
+  setIf("seLoN",has(d.nD)&&cS?pp1(cS[0]):pp1(d.seLo));setIf("seHiN",has(d.nD)&&cS?pp1(cS[1]):pp1(d.seHi));
+  setIf("spLoN",has(d.nH)&&cP?pp1(cP[0]):pp1(d.spLo));setIf("spHiN",has(d.nH)&&cP?pp1(cP[1]):pp1(d.spHi));
+  setIf("nDN",has(d.nD)?String(d.nD):"");setIf("nHN",has(d.nH)?String(d.nH):"");
+  setIf("lrpLoN",f2(d.lrpLo));setIf("lrpHiN",f2(d.lrpHi));setIf("lrnLoN",f2(d.lrnLo));setIf("lrnHiN",f2(d.lrnHi));}
+function renderUncDx(){const d=S.dx;$("dxUnc").hidden=!S.unc;if(!S.unc)return;
+  $("uncSeSp").hidden=!(has(d.se)||!has(d.lrp)&&!has(d.lrn));$("uncLR").hidden=!$("uncSeSp").hidden;
+  const L=lrCI(),n=$("dxUncNote");let t="";
+  if(has(d.se)&&L.p)t=`LR+ ${lr(d.lrp)} (IC 95% ${lr(L.p[0])} a ${lr(L.p[1])}) · LR− ${lr(d.lrn)} (IC 95% ${lr(L.n[0])} a ${lr(L.n[1])}).`;
+  if(d.uncAuto)t+=(t?" ":"")+"Valores de incerteza preenchidos como exemplo: ajuste aos dados do seu caso e do estudo.";
+  const any=[d.preLo,d.preHi,d.nD,d.nH,d.seLo,d.seHi,d.spLo,d.spHi,d.lrpLo,d.lrpHi,d.lrnLo,d.lrnHi].some(has);
+  if(!any&&(has(d.pre)||has(d.lrp)||has(d.lrn))){setHTML(n,`Preencha as faixas para ver a incerteza. <button class="chip" id="dxUncFill" style="margin-left:4px">Preencher exemplo</button>`);return;}
+  setHTML(n,esc(t));}
+
+function dotGrid(counts,cols,rows){
+  const W=400,gap=W/cols,r=gap*0.36;let s="",i=0;
+  counts.forEach(c=>{for(let j=0;j<c.n&&i<cols*rows;j++,i++){const x=(i%cols)*gap+gap/2,y=Math.floor(i/cols)*gap+gap/2;
+    s+=c.ring?`<circle cx="${x}" cy="${y}" r="${r-0.9}" fill="none" stroke="${c.col}" stroke-width="1.7"/>`:`<circle cx="${x}" cy="${y}" r="${r}" fill="${c.col}"/>`;}});
+  return s;
+}
+function drawDxDots(){
+  const d=S.dx;
+  if(!(has(d.pre)&&has(d.se)&&has(d.sp))){$("dxDots").innerHTML=dotGrid([{n:1000,col:"var(--dot-off)"}],40,25);$("dxLegend").innerHTML="";
+    $("dxSentence").innerHTML=`<span class="empty-note" style="display:block">Informe pré-teste, sensibilidade e especificidade (ou as duas LRs) para distribuir os 1.000 pacientes.</span>`;
+    $("dotsLede").textContent="Frequências naturais: a mesma conta de Bayes, contada em pessoas.";return;}
+  const N=1000,D=Math.round(N*d.pre),TP=Math.round(D*d.se),FN=D-TP,H=N-D,FP=Math.round(H*(1-d.sp)),TN=H-FP;
+  $("dxDots").innerHTML=dotGrid([{n:TP,col:"var(--accent)"},{n:FN,col:"var(--accent)",ring:true},{n:FP,col:"var(--alt)"},{n:TN,col:"var(--dot-off)"}],40,25);
+  $("dxLegend").innerHTML=`<span><i style="background:var(--accent)"></i>Verdadeiro positivo <b>${TP}</b></span><span><i style="border:1.7px solid var(--accent)"></i>Falso negativo <b>${FN}</b></span><span><i style="background:var(--alt)"></i>Falso positivo <b>${FP}</b></span><span><i style="background:var(--dot-off)"></i>Verdadeiro negativo <b>${TN}</b></span>`;
+  const pos=TP+FP,neg=FN+TN;
+  $("dxSentence").innerHTML=`Dos <b>${pos}</b> positivos${tsT()?` (${tsT()})`:""}, <b>${TP}</b> são verdadeiros${dzT()?`, ou seja, têm ${dzT()}`:""} (VPP ≈ ${pos?pc(TP/pos):"—"}) e <b>${FP}</b> são falsos. Dos <b>${neg}</b> negativos, <b>${FN}</b> são falsos negativos (VPN ≈ ${neg?pc(TN/neg):"—"}).`;
+  {const UR=dxRanges();if(UR&&UR.lrp&&UR.lrn&&!dxMasked())$("dxSentence").insertAdjacentHTML("beforeend",` <b>Com a incerteza</b>, o VPP fica entre ${pc(UR.lrpPost[0])} e ${pc(UR.lrpPost[1])}.`);}
+  $("dotsLede").textContent=`Cada ponto é um paciente com pré-teste de ${pc(d.pre)}${dzT()?` para ${S.names.dz.trim()}`:""}, testado${tsT()?` com ${S.names.ts.trim()}`:""} (Se ${pcx(d.se)}, Esp ${pcx(d.sp)}).`;
+}
+function drawLeaf(pp,pn){
+  const d=S.dx,W=420,H=320,L=46,R=14,T=12,B=40,iw=W-L-R,ih=H-T-B,X=p=>L+p*iw,Y=p=>T+ih-p*ih;let s="";
+  if(isCalc()){const X0=X(d.tTest),X1=X(d.tTreat);
+    s+=`<rect x="${L}" y="${Y(d.tRx)}" width="${iw}" height="${Y(0)-Y(d.tRx)}" fill="var(--z1)" opacity=".6"/><rect x="${L}" y="${Y(1)}" width="${iw}" height="${Y(d.tRx)-Y(1)}" fill="var(--z3)" opacity=".6"/>`;
+    if(!d.calc.noTest&&!d.calc.needTest)s+=`<rect x="${X0}" y="${Y(1)}" width="${X1-X0}" height="${ih}" fill="var(--z2)" opacity=".55"/><line x1="${X0}" x2="${X0}" y1="${Y(1)}" y2="${Y(0)}" stroke="var(--z2-t)" stroke-width="1.2"/><line x1="${X1}" x2="${X1}" y1="${Y(1)}" y2="${Y(0)}" stroke="var(--z2-t)" stroke-width="1.2"/><text x="${(X0+X1)/2}" y="${Y(1)+14}" text-anchor="middle" style="fill:var(--z2-t);font-weight:600;font-size:11px">testar</text>`;
+    s+=`<text x="${W-R-4}" y="${Y(d.tRx)-5}" text-anchor="end" style="fill:var(--z3-t);font-size:11px;font-weight:600">limiar de tratamento ${pc(d.tRx)}</text>`;}
+  else if(d.thr&&d.thrMode==="manual")s+=`<rect x="${L}" y="${Y(d.tTest)}" width="${iw}" height="${Y(0)-Y(d.tTest)}" fill="var(--z1)" opacity=".7"/><rect x="${L}" y="${Y(d.tTreat)}" width="${iw}" height="${Y(d.tTest)-Y(d.tTreat)}" fill="var(--z2)" opacity=".7"/><rect x="${L}" y="${Y(1)}" width="${iw}" height="${Y(d.tTreat)-Y(1)}" fill="var(--z3)" opacity=".7"/>`;
+  [0,.2,.4,.6,.8,1].forEach(v=>s+=`<line class="g" x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L-8}" y="${Y(v)+4}" text-anchor="end">${v*100}%</text><text x="${X(v)}" y="${H-22}" text-anchor="middle">${v*100}%</text>`);
+  s+=`<line class="dg" x1="${X(0)}" y1="${Y(0)}" x2="${X(1)}" y2="${Y(1)}"/><text x="${X(.62)+6}" y="${Y(.62)+16}" style="fill:var(--muted);font-size:11px">LR = 1</text>`;
+  const curve=Lr=>{let p="";for(let i=0;i<=200;i++){const x=clamp(i/200,1e-6,1-1e-6);p+=(i?"L":"M")+X(x).toFixed(1)+","+Y(postOf(x,Lr)).toFixed(1);}return p;};
+  const UR=dxRanges();
+  if(UR){s+=`<rect class="bandX" x="${X(UR.pre[0])}" y="${Y(1)}" width="${Math.max(1,X(UR.pre[1])-X(UR.pre[0]))}" height="${ih}"/>`;
+    const band=(Lr,cl)=>{let a="",b=[];for(let i=0;i<=120;i++){const x=clamp(i/120,1e-6,1-1e-6);a+=(i?"L":"M")+X(x).toFixed(1)+","+Y(postOf(x,Lr[1])).toFixed(1);b.push(X(x).toFixed(1)+","+Y(postOf(x,Lr[0])).toFixed(1));}return `<path class="${cl}" d="${a}L${b.reverse().join("L")}Z"/>`;};
+    if(UR.lrp&&d.show!=="neg")s+=band(UR.lrp,"bandP");if(UR.lrn&&d.show!=="pos")s+=band(UR.lrn,"bandN");}
+  if(has(d.lrp)&&d.show!=="neg")s+=`<path class="cp" d="${curve(d.lrp)}"/>`;
+  if(has(d.lrn)&&d.show!=="pos")s+=`<path class="cn" d="${curve(d.lrn)}"/>`;
+  if(has(d.pre)){s+=`<line class="a" x1="${X(d.pre)}" x2="${X(d.pre)}" y1="${Y(0)}" y2="${Y(1)}" stroke-dasharray="3 3"/>`;
+    if(has(pp)&&d.show!=="neg")s+=`<circle cx="${X(d.pre)}" cy="${Y(pp)}" r="6" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>`;
+    if(has(pn)&&d.show!=="pos")s+=`<circle cx="${X(d.pre)}" cy="${Y(pn)}" r="6" fill="var(--alt)" stroke="var(--surface)" stroke-width="2"/>`;}
+  if(!has(d.lrp)&&!has(d.lrn))s+=`<text x="${L+iw/2}" y="${T+ih*0.3}" text-anchor="middle" style="fill:var(--muted);font-style:italic">As curvas aparecem quando você informar o teste</text>`;
+  s+=`<line class="a" x1="${L}" x2="${W-R}" y1="${Y(0)}" y2="${Y(0)}"/><text x="${L+iw/2}" y="${H-4}" text-anchor="middle">probabilidade pré-teste</text><text x="12" y="${T+ih/2}" transform="rotate(-90 12 ${T+ih/2})" text-anchor="middle">pós-teste</text>`;
+  $("leaf").innerHTML=s;
+}
+
+/* ================= TRATAMENTO: leitura ================= */
+const txSig=()=>{const t=S.tx,r=rrrFor(t.pc);return [t.pc,r].map(x=>has(x)?x.toPrecision(6):"-").join("|");};
+const txMasked=()=>S.tx.ch.on&&!S.tx.ch.rev;
+function renderTx(){
+  const t=S.tx,r=rrrFor(t.pc),ok=has(t.pc)&&has(r)&&r>0,arr=ok?t.pc*r:null,N=ok?1/arr:null;
+  const ch=t.ch;if(ch.on&&ch.sig!==txSig()){ch.rev=false;ch.e=null;ch.sig=txSig();}
+  const M=txMasked()&&ok;
+  drawChat();
+  $("roNnt").textContent=ok?nnt(N):"—";$("roNntS").textContent=ok?`em ${fmt(N,1)} tratados${S.names.pr.trim()?" por "+S.names.pr.trim().replace(/^(em|por|durante|ao longo de)\s+/i,""):""}, 1 paciente a menos com ${S.names.oc.trim()||"o desfecho"}`:"falta risco basal ou efeito";
+  $("roArr").textContent=ok?fmt(arr*100,arr<0.01?2:1)+" p.p.":"—";$("roArrS").textContent=ok?`${fmt(arr*1000,arr*1000<10?1:0)} desfechos evitados por 1.000`:"";
+  const hOk=t.harm&&has(t.ari)&&t.ari>0;$("roHarmBox").hidden=!t.harm;$("roLhhBox").hidden=!t.harm;
+  let bal=null;
+  if(t.harm){$("roNnh").textContent=hOk?nnt(1/t.ari):"—";$("roNnhS").textContent=hOk?`1 dano a cada ${nnt(1/t.ari)} tratados`:"informe o dano";
+    if(hOk&&ok){const lhh=arr/(t.ari*t.sev);bal=t.sev*t.ari/r;$("roLhh").textContent=fmt(lhh,lhh<10?2:1);$("roLhh").style.color=lhh>=1?"var(--accent)":"var(--harm)";
+      $("roLhhS").textContent=lhh>=1?`${fmt(lhh,1)} benefício(s) por dano ponderado`:`dano ponderado ${fmt(1/lhh,1)}× o benefício`;}
+    else{$("roLhh").textContent="—";$("roLhh").style.color="";$("roLhhS").textContent="";}}
+  const v=$("txVerdict");
+  if(!has(t.pc)&&!has(r)){v.className="verdict idle";v.innerHTML=`<span class="eyebrow">Como começar</span><p>Informe o risco do desfecho sem tratamento para este paciente e o efeito relativo do tratamento, vindo de ensaios ou metanálises.</p>`;}
+  else if(has(r)&&r<=0){v.className="verdict warn";v.innerHTML=`<span class="eyebrow">Sem benefício</span><p>Com esse efeito, o tratamento não reduz o risco (RR ≥ 1). Não há NNT; se o risco aumenta, calcula-se um NNH.</p>`;}
+  else if(!ok){v.className="verdict idle";v.innerHTML=`<span class="eyebrow">Falta um dado</span><p>${has(t.pc)?"Agora informe o efeito do tratamento.":"Agora informe o risco basal do paciente."}</p>`;}
+  else{let m=`O risco cai de ${pcx(t.pc)} para ${pcx(t.pc*(1-r))}: ${fmt(arr*100,arr<0.01?2:1)} pontos percentuais a menos. É preciso tratar ${nnt(N)} pacientes como este${ivTx()}${perTx()} para evitar ${ocT()?`${ocT()} em um paciente`:"um desfecho"}.`;
+    if(hOk)m+=t.pc>=bal?` O benefício supera o dano ponderado a partir de risco basal de ${pcx(Math.min(bal,1))}; este paciente está acima disso.`:` Para este dano, só compensa tratar com risco basal acima de ${bal>1?"100%":pcx(bal)}; este paciente está abaixo disso.`;
+    if(t.mode==="or")m+=` A OR de ${fmt(t.or,2)} equivale aqui a RR de ${fmt(1-r,2)}.`;
+    v.className="verdict"+(hOk&&t.pc<bal?" warn":"");v.innerHTML=`<span class="eyebrow">Leitura</span><p>${m}</p>`;}
+  const UT=txRanges();
+  const showU=UT&&ok&&!M;
+  $("roNntR").textContent=showU?"faixa: "+(UT.cross?`${nnt(UT.nnt[0])} a ∞`:rng(UT.nnt[0],UT.nnt[1],nnt)):"";
+  $("roArrR").textContent=showU?`faixa: ${fmt(UT.arr[0]*100,UT.arr[0]<0.01&&UT.arr[0]>-0.01?2:1)} a ${fmt(UT.arr[1]*100,UT.arr[1]<0.01?2:1)} p.p.`:"";
+  $("roLhhR").textContent=showU&&hOk?`faixa: ${fmt(UT.arr[0]/(t.ari*t.sev),2)} a ${fmt(UT.arr[1]/(t.ari*t.sev),2)}`:"";
+  if(showU){let m=`<b>Com a incerteza:</b> o NNT fica entre ${nnt(UT.nnt[0])} e ${UT.cross?"∞":nnt(UT.nnt[1])} (redução absoluta de ${fmt(UT.arr[0]*100,2)} a ${fmt(UT.arr[1]*100,2)} p.p.).`;
+    if(UT.cross)m+=` O intervalo inclui ausência de benefício${UT.nnh?`, e até dano: no pior extremo, 1 desfecho a mais a cada ${nnt(UT.nnh)} tratados (NNH)`:""}. O NNT vai de ${nnt(UT.nnt[0])} a infinito${UT.nnh?" e continua como NNH":""} (Altman, 1998).`;
+    if(hOk){const l0=UT.arr[0]/(t.ari*t.sev),l1=UT.arr[1]/(t.ari*t.sev);m+=l0>=1?" Em toda a faixa, o benefício supera o dano ponderado.":l1<1?" Em toda a faixa, o dano ponderado supera o benefício.":" Dependendo de onde o paciente está na faixa, o balanço entre benefício e dano pode ir para qualquer lado.";}
+    else{const wP=(1/(UT.pc[0]*r))-(1/(UT.pc[1]*r)),wR=UT.hasCI?(1/(t.pc*UT.rrr[0])-1/(t.pc*UT.rrr[1])):0;if(UT.hasCI&&UT.rrr[0]>0)m+=` A maior parte da incerteza vem ${Math.abs(wP)>Math.abs(wR)?"do risco basal":"do efeito do tratamento"}.`;}
+    v.insertAdjacentHTML("beforeend",`<p class="robust">${m}</p>`);}
+  renderUncTx();syncNames();
+  const h=$("txHint");
+  h.textContent=has(r)&&r>0?`RR ${fmt(1-r,2)} · RRR ${fmt(r*100,1)}%`+(has(t.pc)?` · OR ≈ ${fmt((1-r)*(1-t.pc)/(1-(1-r)*t.pc),2)} para este risco basal`:"")+(t.mode==="trial"&&has(t.cer)&&has(t.eer)&&t.cer>t.eer?` · NNT médio do ensaio: ${nnt(1/(t.cer-t.eer))}`:""):"";
+  document.querySelectorAll("#txMode button").forEach(b=>b.classList.toggle("on",b.dataset.v===t.mode));
+  document.querySelectorAll("[data-m]").forEach(el=>el.hidden=el.dataset.m!==t.mode);
+  $("harmFields").hidden=!t.harm;$("harmOn").checked=t.harm;$("txUnpin").hidden=!t.pins.length;$("txPin").disabled=!ok;
+  if(M){$("roNnt").textContent="?";$("roNntS").textContent="estime no desafio";$("roArr").textContent="?";$("roArrS").textContent="";
+    if(t.harm){$("roLhh").textContent="?";$("roLhh").style.color="";$("roLhhS").textContent="";}
+    v.className="verdict idle";v.innerHTML=`<span class="eyebrow">Desafio em andamento</span><p>A leitura aparece depois que você revelar sua estimativa.</p>`;}
+  $("txDotsCard").classList.toggle("masked",M);$("nntCard").classList.toggle("masked",M);$("txPin").disabled=!ok||M;
+  syncTx();drawTxDots(ok?r:null);drawNntCurve(bal,hOk);renderTxChal(ok?N:null,r);
+}
+function syncTx(){const t=S.tx,f=(x,n)=>has(x)?show(r2(x,n)):"";
+  setIf("pcN",has(t.pc)?show(r2(t.pc*100,t.pc<0.01?2:1)):"");setIf("rrrN",has(t.rrr)?show(r2(t.rrr*100,1)):"");
+  setIf("rrN",f(t.rr,2));setIf("orN",f(t.or,2));setIf("cerN",has(t.cer)?show(r2(t.cer*100,1)):"");setIf("eerN",has(t.eer)?show(r2(t.eer*100,1)):"");
+  setIf("ariN",has(t.ari)?show(r2(t.ari*100,2)):"");setIf("sevN",show(r2(t.sev,2)));
+  const pp1=x=>has(x)?show(r2(x*100,1)):"",f2=x=>has(x)?show(r2(x,2)):"";
+  setIf("pcLoN",pp1(t.pcLo));setIf("pcHiN",pp1(t.pcHi));setIf("rrrLoN",pp1(t.rrrLo));setIf("rrrHiN",pp1(t.rrrHi));
+  setIf("rrLoN",f2(t.rrLo));setIf("rrHiN",f2(t.rrHi));setIf("orLoN",f2(t.orLo));setIf("orHiN",f2(t.orHi));
+  setIf("nCN",has(t.nC)?String(t.nC):"");setIf("nTN",has(t.nT)?String(t.nT):"");}
+function renderUncTx(){const t=S.tx;$("txUnc").hidden=!S.unc;if(!S.unc)return;
+  ["rrr","rr","or","trial"].forEach(m=>document.querySelectorAll(".um-"+m).forEach(e=>e.hidden=t.mode!==m));
+  const rq=rrrRange(t.pc),n=$("txUncNote");let x="";
+  if(rq&&t.mode!=="rrr")x=`RRR ${fmt(rrrFor(t.pc)*100,1)}% (IC 95% ${fmt(rq[0]*100,1)}% a ${fmt(rq[1]*100,1)}%).`;
+  if(rq&&rq[0]<=0)x+=(x?" ":"")+"O intervalo do efeito inclui ausência de benefício.";
+  if(t.uncAuto)x+=(x?" ":"")+"Valores de incerteza preenchidos como exemplo: ajuste aos dados do seu caso e do estudo.";
+  const any=[t.pcLo,t.pcHi,t.rrrLo,t.rrrHi,t.rrLo,t.rrHi,t.orLo,t.orHi,t.nC,t.nT].some(has);
+  if(!any&&(has(t.pc)||has(rrrFor(t.pc)))){setHTML(n,`Preencha as faixas para ver a incerteza. <button class="chip" id="txUncFill" style="margin-left:4px">Preencher exemplo</button>`);return;}
+  setHTML(n,esc(x));}
+const esc=t=>String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+document.addEventListener("click",e=>{if(e.target.id==="dxUncFill"){defaultsDx();renderDx();}else if(e.target.id==="txUncFill"){defaultsTx();renderTx();}});
+function drawTxDots(r){
+  const t=S.tx;
+  if(!has(r)){$("txDotsH").textContent="Pacientes como este, tratados";$("txDots").setAttribute("viewBox","0 0 400 100");$("txDots").innerHTML=dotGrid([{n:100,col:"var(--dot-off)"}],20,5);
+    $("txLegend").innerHTML="";$("txSentence").innerHTML=`<span class="empty-note" style="display:block">Informe risco basal e efeito do tratamento para ver o que acontece com cada paciente.</span>`;return;}
+  const small=t.pc*100<3,N=small?1000:100,cols=small?40:20,rows=small?25:5;
+  const ev=t.pc*N,prev=Math.round(ev*r),still=Math.round(ev)-prev,harm=t.harm&&has(t.ari)?Math.round(t.ari*N):0,none=Math.max(0,N-prev-still-harm);
+  $("txDotsH").textContent=`${N.toLocaleString("pt-BR")} pacientes como este, tratados`;
+  $("txDots").setAttribute("viewBox",small?"0 0 400 250":"0 0 400 100");
+  $("txDots").innerHTML=dotGrid([{n:prev,col:"var(--accent)"},{n:still,col:"var(--harm)"},{n:harm,col:"var(--alt)",ring:true},{n:none,col:"var(--dot-off)"}],cols,rows);
+  $("txLegend").innerHTML=`<span><i style="background:var(--accent)"></i>${ocT()?`Evitou ${ocT()}`:"Desfecho evitado"} <b>${prev}</b></span><span><i style="background:var(--harm)"></i>${ocT()?`Teve ${ocT()} mesmo tratado`:"Desfecho mesmo tratado"} <b>${still}</b></span>${harm?`<span><i style="border:1.7px solid var(--alt)"></i>Dano do tratamento <b>${harm}</b></span>`:""}<span><i style="background:var(--dot-off)"></i>${ocT()?`Não teria ${ocT()} de qualquer forma`:"Sem desfecho de qualquer forma"} <b>${none}</b></span>`;
+  $("txSentence").innerHTML=`Sem tratamento, cerca de <b>${fmt(ev,ev<10?1:0)}</b> de ${N.toLocaleString("pt-BR")} teriam ${ocOr("o desfecho")}${perIn()}. ${ivT()?`Com ${ivT()}`:"Com o tratamento"}, <b>${prev}</b> deixam de ter ${ocOr("o desfecho")}. Os demais <b>${N-prev}</b> são tratados sem mudança no desfecho${harm?`, e <b>${harm}</b> sofrem o dano`:""}.`;
+  {const UT=txRanges();if(UT&&!txMasked()){const a=Math.max(0,Math.round(UT.arr[0]*N)),b=Math.round(UT.arr[1]*N);$("txSentence").insertAdjacentHTML("beforeend",` <b>Com a incerteza</b>, o tratamento evitaria entre ${a} e ${b} desfechos a cada ${N.toLocaleString("pt-BR")}.`);}}
+}
+function drawNntCurve(bal,hOk){
+  const t=S.tx,W=420,H=320,L=50,R=14,T=12,B=40,iw=W-L-R,ih=H-T-B,X=p=>L+(L10(p)+3)/3*iw,Y=n=>T+ih-L10(n)/4*ih;let s="";
+  [0.001,0.01,0.1,1].forEach(p=>s+=`<line class="g" x1="${X(p)}" x2="${X(p)}" y1="${T}" y2="${T+ih}"/><text x="${X(p)}" y="${H-22}" text-anchor="middle">${tickLbl(p*100)}%</text>`);
+  [1,10,100,1000,10000].forEach(n=>s+=`<line class="g" x1="${L}" x2="${W-R}" y1="${Y(n)}" y2="${Y(n)}"/><text x="${L-8}" y="${Y(n)+4}" text-anchor="end">${n.toLocaleString("pt-BR")}</text>`);
+  const r0=rrrFor(t.pc);
+  if(hOk&&has(r0)&&r0>0){const nh=1/(t.ari*t.sev);if(nh>=1&&nh<=10000){const xb=X(clamp(bal,0.001,1));
+    s+=`<rect class="harmZ" x="${L}" y="${T}" width="${xb-L}" height="${ih}"/><line class="harmL" x1="${L}" x2="${W-R}" y1="${Y(nh)}" y2="${Y(nh)}"/><text x="${W-R}" y="${Y(nh)-6}" text-anchor="end" style="fill:var(--harm)">NNH ponderado ${nnt(nh)}</text>`;
+    if(bal>=0.001&&bal<=1)s+=`<text x="${Math.min(xb+6,W-120)}" y="${T+14}" style="fill:var(--harm)">equilíbrio: ${pcx(bal)}</text>`;}}
+  {const UT=txRanges();if(UT){s+=`<rect class="bandX" x="${X(clamp(UT.pc[0],0.001,1))}" y="${T}" width="${Math.max(1,X(clamp(UT.pc[1],0.001,1))-X(clamp(UT.pc[0],0.001,1)))}" height="${ih}"/>`;
+    if(UT.hasCI){let a="",b=[];for(let i=0;i<=120;i++){const q=Math.pow(10,-3+3*i/120),rq=rrrRange(q)||[r0,r0];const yA=clamp(Y(1/(q*Math.max(rq[1],1e-4))),T,T+ih),yB=rq[0]>0?clamp(Y(1/(q*rq[0])),T,T+ih):T;a+=(i?"L":"M")+X(q).toFixed(1)+","+yA.toFixed(1);b.push(X(q).toFixed(1)+","+yB.toFixed(1));}
+      s+=`<path class="bandP" d="${a}L${b.reverse().join("L")}Z"/>`;}}}
+  const canCurve=t.mode==="or"?has(t.or):has(r0)&&r0>0;
+  if(canCurve){let p="";for(let i=0;i<=200;i++){const q=Math.pow(10,-3+3*i/200),rr=rrrFor(q);if(!(rr>0))continue;p+=(p?"L":"M")+X(q).toFixed(1)+","+clamp(Y(1/(q*rr)),T-2,T+ih+2).toFixed(1);}s+=`<path class="cp" d="${p}"/>`;}
+  else s+=`<text x="${L+iw/2}" y="${T+ih*0.35}" text-anchor="middle" style="fill:var(--muted);font-style:italic">A curva aparece quando você informar o efeito</text>`;
+  t.pins.forEach((q,i)=>{const n=1/(q.pc*q.rrr);s+=`<circle cx="${X(q.pc)}" cy="${Y(n)}" r="4.5" fill="none" stroke="var(--tick)" stroke-width="1.6"/><text x="${X(q.pc)+8}" y="${Y(n)-6}">P${i+1}</text>`;});
+  if(has(t.pc)&&has(r0)&&r0>0){const n0=1/(t.pc*r0);s+=`<circle cx="${X(t.pc)}" cy="${Y(n0)}" r="6" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/><text x="${Math.min(X(t.pc)+10,W-70)}" y="${Y(n0)+18}" style="fill:var(--fg);font-weight:600">NNT ${nnt(n0)}</text>`;}
+  s+=`<line class="a" x1="${L}" x2="${W-R}" y1="${T+ih}" y2="${T+ih}"/><text x="${L+iw/2}" y="${H-4}" text-anchor="middle">risco basal (escala log)</text><text x="12" y="${T+ih/2}" transform="rotate(-90 12 ${T+ih/2})" text-anchor="middle">NNT (escala log)</text>`;
+  $("nntCurve").innerHTML=s;
+}
+
+/* ================= limiares calculados ================= */
+function renderThrOut(){const d=S.dx,o=$("thrOut");if(d.thrMode!=="calc"||!d.thr){o.innerHTML="";return;}
+  const c=d.calc;
+  if(!c||c.err){o.innerHTML=`<p class="empty-note" style="grid-column:1/-1;margin:0">Informe benefício e dano, ambos maiores que zero.</p>`;return;}
+  const st=(l,v,sub)=>`<div class="rs"><span>${l}</span><b>${v}</b><small>${sub}</small></div>`;
+  let h=st("Limiar de teste",c.needTest||c.noTest?"—":pc(d.tTest),"abaixo: não testar")+st("Teste-tratamento",c.needTest||c.noTest?"—":pc(d.tTreat),"acima: tratar sem testar")+st("Tratar se ≥",pc(d.tRx),"dano ÷ (dano + benefício)");
+  // faixa em escala logit de 0,5% a 99,5%
+  const W=360,x0=10,x1=350,lo=logit(0.005),hi=logit(0.995),X=p=>x0+(logit(clamp(p,0.005,0.995))-lo)/(hi-lo)*(x1-x0);
+  let g=`<rect x="${x0}" y="8" width="${X(d.tTest)-x0}" height="14" fill="var(--z1)"/>`;
+  if(!c.needTest&&!c.noTest)g+=`<rect x="${X(d.tTest)}" y="8" width="${X(d.tTreat)-X(d.tTest)}" height="14" fill="var(--z2)"/>`;
+  g+=`<rect x="${X(d.tTreat)}" y="8" width="${x1-X(d.tTreat)}" height="14" fill="var(--z3)"/>`;
+  [1,5,20,50,80,95,99].forEach(v=>g+=`<line x1="${X(v/100)}" x2="${X(v/100)}" y1="22" y2="26" stroke="var(--tick)"/><text x="${X(v/100)}" y="37" text-anchor="middle">${v}%</text>`);
+  if(has(d.pre))g+=`<path d="M${X(d.pre)-6},2 L${X(d.pre)+6},2 L${X(d.pre)},9 Z" fill="var(--ink)"/>`;
+  h+=`<div class="thr-strip"><svg viewBox="0 0 ${W} 40" aria-label="Zonas de decisão para a pré-teste">${g}</svg></div>`;
+  if(c.needTest)h+=`<p class="hint" style="grid-column:1/-1;margin:0">Os limiares de teste dependem da sensibilidade e da especificidade do exame.</p>`;
+  if(c.noTest)h+=`<p class="hint warn" style="grid-column:1/-1;margin:0">Com este exame, nenhuma faixa de pré-teste justifica testar.</p>`;
+  o.innerHTML=h;}
+
+/* ================= modo desafio ================= */
+function setHTML(el,h){if(el.__h!==h){el.__h=h;el.innerHTML=h;}}
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const errCls=(e,ok,mid)=>Math.abs(e)<=ok?"good":Math.abs(e)<=mid?"mid":"bad";
+function renderDxChal(pp,pn){
+  const d=S.dx,c=d.ch,el=$("dxChal");
+  if(!c.on){setHTML(el,`<div class="chal-off"><div><div class="row"><span class="eyebrow">Modo desafio</span><button class="more-btn" data-learn="desafio"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button></div><p>Esconda os resultados e estime a probabilidade pós-teste antes de ver. É o treino mais direto contra a negligência da taxa-base.</p></div><button class="btn primary" data-ch="on">Ativar desafio</button></div>`);return;}
+  let h=`<div class="chal-h"><div class="row"><span class="eyebrow">Modo desafio</span><button class="more-btn" data-learn="desafio"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button></div><div class="row"><button class="chip" data-ch="rand">Caso aleatório</button><button class="chip clear" data-ch="off">Sair</button></div></div>`;
+  const ready=has(pp)||has(pn);
+  if(!ready){setHTML(el,h+`<p class="fb" style="margin-top:0">Monte um caso: digite os dados acima, escolha um exemplo ou toque em “Caso aleatório”.</p>`+score(c));return;}
+  const caseTxt=`Pré-teste <b>${pc(d.pre)}</b> · `+(has(d.se)?`Sensibilidade <b>${pcx(d.se)}</b> · Especificidade <b>${pcx(d.sp)}</b>`:`${has(d.lrp)?`LR+ <b>${lr(d.lrp)}</b>`:""}${has(d.lrp)&&has(d.lrn)?" · ":""}${has(d.lrn)?`LR− <b>${lr(d.lrn)}</b>`:""}`);
+  if(!c.rev){
+    h+=`<div class="case">${caseTxt}</div><p class="q">Qual a probabilidade de ${dzT()||"doença"} depois do resultado${tsT()?` de ${tsT()}`:""}?</p><div class="inputs two">`+
+      (has(pp)?`<div class="inp pos"><label for="chP">Se der positivo</label><div class="box"><input id="chP" inputmode="decimal" autocomplete="off" placeholder="?" value="${has(c.eP)?show(r2(c.eP*100,1)):""}"><span>%</span></div></div>`:"")+
+      (has(pn)?`<div class="inp neg"><label for="chN">Se der negativo</label><div class="box"><input id="chN" inputmode="decimal" autocomplete="off" placeholder="?" value="${has(c.eN)?show(r2(c.eN*100,1)):""}"><span>%</span></div></div>`:"")+
+      `</div><button class="btn primary block" data-ch="reveal">Revelar</button><p class="hint" id="chMsg"></p>`;
+    setHTML(el,h+score(c));return;}
+  const L=c.last,row=(lbl,e,t,cl)=>`<tr><td>${lbl}</td><td>${pc(e)}</td><td><b>${pc(t)}</b></td><td><span class="err ${errCls((e-t)*100,5,15)}">${(e-t)>=0?"+":"−"}${fmt(Math.abs(e-t)*100,1)} p.p.</span></td></tr>`;
+  h+=`<div class="case">${caseTxt}</div><table class="chal-t"><thead><tr><th>Resultado</th><th>Você</th><th>Real</th><th>Erro</th></tr></thead><tbody>`+
+    (has(L.eP)?row("Positivo",L.eP,L.tP):"")+(has(L.eN)?row("Negativo",L.eN,L.tN):"")+`</tbody></table>`+
+    L.fb.map(x=>`<p class="fb">${x}</p>`).join("")+`<button class="btn primary block" data-ch="rand">Novo caso aleatório</button>`;
+  setHTML(el,h+score(c));
+}
+function score(c){if(!c.rounds.length)return"";const n=c.rounds.length,hits=c.rounds.filter(r=>r.hit).length,m=c.rounds.reduce((a,r)=>a+r.err,0)/n;
+  return `<p class="score">Rodadas: ${n} · acertos: ${hits} · erro médio: ${c.unit==="x"?"":""}${fmt(m,1)}${c.unit||" p.p."}</p>`;}
+function dxFeedback(d,eP,eN,tP,tN){const f=[];
+  if(has(eP)){const e=eP-tP;
+    if(Math.abs(e)<=0.05)f.push("<b>Positivo:</b> excelente estimativa.");
+    else if(has(d.se)&&Math.abs(eP-d.se)<=0.05&&Math.abs(tP-d.se)>0.1)f.push(`<b>Positivo:</b> sua estimativa ficou perto da sensibilidade (${pcx(d.se)}). É o erro clássico de trocar a probabilidade de o teste dar positivo em quem tem a doença pela probabilidade de ter a doença quando o teste deu positivo. Esta última é o VPP, e depende da pré-teste.`);
+    else if(e>0.1&&d.pre<0.15)f.push(`<b>Positivo:</b> você superestimou em ${fmt(e*100,0)} p.p. Com pré-teste de ${pc(d.pre)}, muitos dos positivos são falsos positivos. Veja a matriz de 1.000 pacientes.`);
+    else if(e>0.1)f.push(`<b>Positivo:</b> você superestimou em ${fmt(e*100,0)} p.p. A LR+ de ${lr(d.lrp)} multiplica as odds (${fmt(d.pre/(1-d.pre),2)} → ${fmt(d.pre/(1-d.pre)*d.lrp,2)}), não a probabilidade.`);
+    else if(e<-0.1)f.push(`<b>Positivo:</b> você subestimou em ${fmt(-e*100,0)} p.p. Com LR+ de ${lr(d.lrp)}, o positivo pesa mais do que parece.`);
+    else f.push(`<b>Positivo:</b> perto, com erro de ${fmt(Math.abs(e)*100,0)} p.p.`);}
+  if(has(eN)){const e=eN-tN;
+    if(Math.abs(e)<=0.05)f.push("<b>Negativo:</b> excelente estimativa.");
+    else if(e<-0.1&&d.pre>0.4)f.push(`<b>Negativo:</b> você subestimou em ${fmt(-e*100,0)} p.p. Com pré-teste de ${pc(d.pre)}, um negativo não descarta: ainda restam ${pc(tN)}.`);
+    else if(e<-0.1)f.push(`<b>Negativo:</b> você subestimou em ${fmt(-e*100,0)} p.p. A LR− de ${lr(d.lrn)} reduz as odds, mas não as zera.`);
+    else if(e>0.1)f.push(`<b>Negativo:</b> você superestimou em ${fmt(e*100,0)} p.p. Com LR− de ${lr(d.lrn)}, o negativo derruba a probabilidade mais do que parece.`);
+    else f.push(`<b>Negativo:</b> perto, com erro de ${fmt(Math.abs(e)*100,0)} p.p.`);}
+  return f;}
+function randDx(){const d=S.dx;let se,sp;do{se=pick([60,70,75,80,85,90,95,98]);sp=pick([50,60,70,75,80,85,90,95,98]);}while(se+sp<130);
+  Object.assign(d,{pre:pick([0.5,1,2,3,5,8,10,15,20,25,30,40,50,60,70,80])/100,se:se/100,sp:sp/100,chain:[],pins:[]});fromSeSp();clearUncDx();if(S.unc)defaultsDx();markOn("dxPresets",null);renderDx();}
+$("dxChal").addEventListener("input",e=>{const c=S.dx.ch,v=parse(e.target.value);if(Number.isNaN(v))return;if(e.target.id==="chP")c.eP=v==null?null:clamp(v/100,0,1);if(e.target.id==="chN")c.eN=v==null?null:clamp(v/100,0,1);});
+$("dxChal").addEventListener("click",e=>{const b=e.target.closest("[data-ch]");if(!b)return;const d=S.dx,c=d.ch,a=b.dataset.ch;
+  if(a==="on"){c.on=true;c.rev=false;c.sig=dxSig();renderDx();}
+  else if(a==="off"){c.on=false;c.rev=false;renderDx();}
+  else if(a==="rand")randDx();
+  else if(a==="reveal"){const pp=has(d.pre)&&has(d.lrp)?postOf(d.pre,d.lrp):null,pn=has(d.pre)&&has(d.lrn)?postOf(d.pre,d.lrn):null;
+    if((has(pp)&&!has(c.eP))||(has(pn)&&!has(c.eN))){$("chMsg").textContent="Preencha sua estimativa antes de revelar.";return;}
+    const errs=[];if(has(pp))errs.push(Math.abs(c.eP-pp)*100);if(has(pn))errs.push(Math.abs(c.eN-pn)*100);
+    c.last={eP:has(pp)?c.eP:null,eN:has(pn)?c.eN:null,tP:pp,tN:pn,fb:dxFeedback(d,has(pp)?c.eP:null,has(pn)?c.eN:null,pp,pn)};
+    c.rounds.push({err:errs.reduce((a,x)=>a+x,0)/errs.length,hit:errs.every(x=>x<=5)});c.rev=true;renderDx();}
+});
+function renderTxChal(N,r){
+  const t=S.tx,c=t.ch,el=$("txChal");c.unit="%";
+  if(!c.on){setHTML(el,`<div class="chal-off"><div><div class="row"><span class="eyebrow">Modo desafio</span><button class="more-btn" data-learn="desafio"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button></div><p>Esconda os resultados e estime o NNT antes de ver. Mostra na hora quando a redução relativa está sendo lida como absoluta.</p></div><button class="btn primary" data-ch="on">Ativar desafio</button></div>`);return;}
+  let h=`<div class="chal-h"><div class="row"><span class="eyebrow">Modo desafio</span><button class="more-btn" data-learn="desafio"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button></div><div class="row"><button class="chip" data-ch="rand">Caso aleatório</button><button class="chip clear" data-ch="off">Sair</button></div></div>`;
+  if(!has(N)){setHTML(el,h+`<p class="fb" style="margin-top:0">Monte um caso: digite risco basal e efeito, escolha um exemplo ou toque em “Caso aleatório”.</p>`+score(c));return;}
+  const caseTxt=`Risco basal <b>${pcx(t.pc)}</b> · RRR <b>${fmt(r*100,r<0.1?1:0)}%</b>`+(t.mode==="or"?` (OR ${fmt(t.or,2)})`:"");
+  if(!c.rev){h+=`<div class="case">${caseTxt}</div><p class="q">Quantos pacientes como este é preciso tratar${ivTx()}${perTx()} para evitar ${ocT()?`${ocT()} em um paciente`:"um desfecho"}?</p><div class="inputs two"><div class="inp pos"><label for="chT">Seu NNT</label><div class="box"><input id="chT" inputmode="decimal" autocomplete="off" placeholder="?" value="${has(c.e)?show(c.e):""}"></div></div></div><button class="btn primary block" data-ch="reveal">Revelar</button><p class="hint" id="chMsgT"></p>`;setHTML(el,h+score(c));return;}
+  const L=c.last,rel=(L.e-L.t)/L.t*100;
+  h+=`<div class="case">${caseTxt}</div><table class="chal-t"><thead><tr><th></th><th>Você</th><th>Real</th><th>Erro</th></tr></thead><tbody><tr><td>NNT</td><td>${fmt(L.e,0)}</td><td><b>${nnt(L.t)}</b></td><td><span class="err ${errCls(rel,20,50)}">${rel>=0?"+":"−"}${fmt(Math.abs(rel),0)}%</span></td></tr></tbody></table>`+
+    L.fb.map(x=>`<p class="fb">${x}</p>`).join("")+`<button class="btn primary block" data-ch="rand">Novo caso aleatório</button>`;
+  setHTML(el,h+score(c));
+}
+function txFeedback(pcv,r,e,N){const inv=1/r,ratio=e/N,arr=pcv*r;
+  if(Math.abs(Math.log(ratio))<=Math.log(1.2))return[`<b>Excelente:</b> dentro de 20% do valor real. RRA = ${pcx(pcv)} × ${fmt(r*100,0)}% = ${fmt(arr*100,2)} p.p.; NNT = 1 ÷ ${fmt(arr,4)} ≈ ${nnt(N)}.`];
+  if(Math.abs(e-inv)/inv<=0.2&&Math.abs(N-inv)/N>0.3)return[`<b>Atenção:</b> você calculou 1 ÷ RRR ≈ ${fmt(inv,0)}, como se a redução relativa fosse absoluta. O NNT é 1 ÷ (risco basal × RRR) = 1 ÷ (${fmt(pcv,3)} × ${fmt(r,2)}) ≈ ${nnt(N)}.`];
+  if(ratio<1)return[`<b>Você superestimou o benefício</b> (NNT menor que o real). Com risco basal de ${pcx(pcv)}, a RRR de ${fmt(r*100,0)}% vira só ${fmt(arr*100,2)} p.p. de redução absoluta.`];
+  return[`<b>Você subestimou o benefício</b> (NNT maior que o real). Com risco basal de ${pcx(pcv)}, a RRR de ${fmt(r*100,0)}% já significa ${fmt(arr*100,1)} p.p. de redução absoluta.`];}
+function randTx(){const t=S.tx;Object.assign(t,{mode:"rrr",pc:pick([0.5,1,2,3,5,8,10,15,20,30,40])/100,rrr:pick([10,15,20,25,30,40,50,60,70])/100,harm:false,pins:[]});clearUncTx();if(S.unc)defaultsTx();markOn("txPresets",null);renderTx();}
+$("txChal").addEventListener("input",e=>{if(e.target.id!=="chT")return;const v=parse(e.target.value);if(Number.isNaN(v))return;S.tx.ch.e=v==null?null:Math.max(1,v);});
+$("txChal").addEventListener("click",e=>{const b=e.target.closest("[data-ch]");if(!b)return;const t=S.tx,c=t.ch,a=b.dataset.ch;
+  if(a==="on"){c.on=true;c.rev=false;c.sig=txSig();renderTx();}
+  else if(a==="off"){c.on=false;c.rev=false;renderTx();}
+  else if(a==="rand")randTx();
+  else if(a==="reveal"){const r=rrrFor(t.pc);if(!(has(t.pc)&&has(r)&&r>0))return;const N=1/(t.pc*r);
+    if(!has(c.e)){$("chMsgT").textContent="Digite seu NNT antes de revelar.";return;}
+    c.last={e:c.e,t:N,fb:txFeedback(t.pc,r,c.e,N)};const rel=Math.abs(c.e-N)/N*100;c.rounds.push({err:rel,hit:rel<=20});c.rev=true;renderTx();}
+});
+
+/* ================= entradas ================= */
+function onNum(id,fn){$(id).addEventListener("input",e=>{const v=parse(e.target.value);if(Number.isNaN(v))return;fn(v);});
+  $(id).addEventListener("blur",()=>{S.tab==="dx"?renderDx():renderTx();});}
+const pct=v=>v==null?null:v/100;
+onNum("preN",v=>{S.dx.pre=v==null?null:clamp(v/100,0.001,0.999);S.dx.chain=[];renderDx();});
+onNum("seN",v=>{S.dx.se=v==null?null:clamp(v/100,0.001,0.999);fromSeSp();S.dx.chain=[];renderDx();});
+onNum("spN",v=>{S.dx.sp=v==null?null:clamp(v/100,0.001,0.999);fromSeSp();S.dx.chain=[];renderDx();});
+onNum("lrpN",v=>{S.dx.lrp=v==null?null:clamp(v,0.001,1000);fromLR();S.dx.chain=[];renderDx();});
+onNum("lrnN",v=>{S.dx.lrn=v==null?null:clamp(v,0.001,1000);fromLR();S.dx.chain=[];renderDx();});
+onNum("tTestN",v=>{if(v==null)return;S.dx.tTest=clamp(v/100,0.001,S.dx.tTreat-0.001);renderDx();});
+onNum("tTreatN",v=>{if(v==null)return;S.dx.tTreat=clamp(v/100,S.dx.tTest+0.001,0.999);renderDx();});
+$("cutR").addEventListener("input",e=>{const dp=S.dx.dp;if(!has(dp))return;setCut(-3+(dp+6)*(+e.target.value)/1000);});
+(function(){const svg=$("roc");let on=false;
+  const f=e=>{const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const q=pt.matrixTransform(svg.getScreenCTM().inverse());return clamp((q.x-46)/(360-46-12),0.002,0.998);};
+  const mv=e=>{const dp=S.dx.dp;if(!has(dp))return;setCut(PhiInv(1-f(e)));};
+  svg.addEventListener("pointerdown",e=>{if(e.pointerType==="touch"||!has(S.dx.dp))return;on=true;svg.setPointerCapture(e.pointerId);mv(e);});
+  svg.addEventListener("pointermove",e=>{if(on)mv(e);});svg.addEventListener("pointerup",()=>on=false);svg.addEventListener("pointercancel",()=>on=false);})();
+$("thrOn").addEventListener("change",e=>{S.dx.thr=e.target.checked;renderDx();});
+$("thrMode").addEventListener("click",e=>{const b=e.target.closest("button");if(b){S.dx.thrMode=b.dataset.v;renderDx();}});
+onNum("thrB",v=>{S.dx.B=v==null?null:Math.max(0,v);renderDx();});
+onNum("thrH",v=>{S.dx.H=v==null?null:Math.max(0,v);renderDx();});
+onNum("thrRt",v=>{S.dx.Rt=v==null?0:Math.max(0,v);renderDx();});
+$("dxShow").addEventListener("click",e=>{const b=e.target.closest("button");if(b){S.dx.show=b.dataset.v;renderDx();}});
+$("dxPin").onclick=()=>{const d=S.dx;d.pins.push({pre:d.pre,lrp:d.lrp,lrn:d.lrn});if(d.pins.length>3)d.pins.shift();renderDx();toast("Linha fixada");};
+$("dxUnpin").onclick=()=>{S.dx.pins=[];renderDx();};
+$("dxClear").onclick=()=>{S.names.dz="";S.names.ts="";Object.assign(S.dx,{pre:null,se:null,sp:null,lrp:null,lrn:null,chain:[],pins:[]});clearUncDx();markOn("dxPresets",null);renderDx();};
+function chainApply(k){const d=S.dx,L=d[k],post=postOf(d.pre,L),UR=dxRanges();
+  d.chain.push({pre:d.pre,L,sign:k==="lrp"?"+":"−",post,preLo:d.preLo,preHi:d.preHi});d.pre=clamp(post,0.001,0.999);
+  if(UR&&UR[k+"Post"]){d.preLo=clamp(UR[k+"Post"][0],0.001,0.999);d.preHi=clamp(UR[k+"Post"][1],0.001,0.999);}
+  else if(S.unc){d.preLo=null;d.preHi=null;}
+  renderDx();}
+$("usePos").onclick=()=>chainApply("lrp");$("useNeg").onclick=()=>chainApply("lrn");
+$("chainUndo").onclick=()=>{const c=S.dx.chain.pop();if(c){S.dx.pre=c.pre;S.dx.preLo=c.preLo;S.dx.preHi=c.preHi;renderDx();}};
+
+onNum("pcN",v=>{S.tx.pc=v==null?null:clamp(v/100,0.001,1);renderTx();});
+onNum("rrrN",v=>{S.tx.rrr=v==null?null:clamp(v/100,-5,1);renderTx();});
+onNum("rrN",v=>{S.tx.rr=v==null?null:clamp(v,0,10);renderTx();});
+onNum("orN",v=>{S.tx.or=v==null?null:clamp(v,0.001,10);renderTx();});
+onNum("cerN",v=>{S.tx.cer=v==null?null:clamp(v/100,0.001,1);renderTx();});
+onNum("eerN",v=>{S.tx.eer=v==null?null:clamp(v/100,0,1);renderTx();});
+onNum("ariN",v=>{S.tx.ari=v==null?null:clamp(v/100,0.0001,0.5);renderTx();});
+onNum("sevN",v=>{if(v==null)return;S.tx.sev=clamp(v,0.05,20);renderTx();});
+$("harmOn").addEventListener("change",e=>{S.tx.harm=e.target.checked;renderTx();});
+$("txMode").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const t=S.tx,r=rrrFor(t.pc);t.mode=b.dataset.v;
+  if(has(r)){if(t.mode==="rrr")t.rrr=r;else if(t.mode==="rr")t.rr=1-r;else if(t.mode==="or"&&has(t.pc)){const rr=1-r;t.or=rr*(1-t.pc)/(1-rr*t.pc);}else if(t.mode==="trial"&&has(t.pc)){t.cer=t.pc;t.eer=t.pc*(1-r);}}
+  renderTx();});
+$("txPin").onclick=()=>{const t=S.tx;t.pins.push({pc:t.pc,rrr:rrrFor(t.pc)});if(t.pins.length>3)t.pins.shift();renderTx();toast("Paciente fixado");};
+$("txUnpin").onclick=()=>{S.tx.pins=[];renderTx();};
+$("txClear").onclick=()=>{S.names.iv="";S.names.oc="";S.names.pr="";Object.assign(S.tx,{pc:null,rrr:null,rr:null,or:null,cer:null,eer:null,pins:[],mode:"rrr"});clearUncTx();markOn("txPresets",null);renderTx();};
+
+/* ================= eventos dos nomes ================= */
+[["dzN","dz","dx"],["tsN","ts","dx"],["ivN","iv","tx"],["ocN","oc","tx"],["prN","pr","tx"]].forEach(([id,k,tab])=>$(id).addEventListener("input",e=>{S.names[k]=e.target.value;tab==="dx"?renderDx():renderTx();}));
+
+/* ================= eventos da incerteza ================= */
+const uD=(id,fn)=>onNum(id,v=>{fn(v);S.dx.uncAuto=false;renderDx();}),uT=(id,fn)=>onNum(id,v=>{fn(v);S.tx.uncAuto=false;renderTx();});
+const P=v=>v==null?null:clamp(v/100,0.001,0.999);
+uD("preLoN",v=>S.dx.preLo=P(v));uD("preHiN",v=>S.dx.preHi=P(v));
+uD("seLoN",v=>{S.dx.seLo=P(v);S.dx.nD=null;});uD("seHiN",v=>{S.dx.seHi=P(v);S.dx.nD=null;});
+uD("spLoN",v=>{S.dx.spLo=P(v);S.dx.nH=null;});uD("spHiN",v=>{S.dx.spHi=P(v);S.dx.nH=null;});
+uD("nDN",v=>S.dx.nD=v==null||v<2?null:Math.round(v));uD("nHN",v=>S.dx.nH=v==null||v<2?null:Math.round(v));
+uD("lrpLoN",v=>S.dx.lrpLo=v==null?null:clamp(v,0.001,1000));uD("lrpHiN",v=>S.dx.lrpHi=v==null?null:clamp(v,0.001,1000));
+uD("lrnLoN",v=>S.dx.lrnLo=v==null?null:clamp(v,0.001,1000));uD("lrnHiN",v=>S.dx.lrnHi=v==null?null:clamp(v,0.001,1000));
+uT("pcLoN",v=>S.tx.pcLo=v==null?null:clamp(v/100,0.001,1));uT("pcHiN",v=>S.tx.pcHi=v==null?null:clamp(v/100,0.001,1));
+uT("rrrLoN",v=>S.tx.rrrLo=v==null?null:clamp(v/100,-5,1));uT("rrrHiN",v=>S.tx.rrrHi=v==null?null:clamp(v/100,-5,1));
+uT("rrLoN",v=>S.tx.rrLo=v==null?null:clamp(v,0.001,10));uT("rrHiN",v=>S.tx.rrHi=v==null?null:clamp(v,0.001,10));
+uT("orLoN",v=>S.tx.orLo=v==null?null:clamp(v,0.001,10));uT("orHiN",v=>S.tx.orHi=v==null?null:clamp(v,0.001,10));
+uT("nCN",v=>S.tx.nC=v==null||v<2?null:Math.round(v));uT("nTN",v=>S.tx.nT=v==null||v<2?null:Math.round(v));
+$("uncBtn").onclick=()=>{S.unc=!S.unc;const b=$("uncBtn");b.classList.toggle("on",S.unc);b.setAttribute("aria-pressed",S.unc);
+  if(S.unc){defaultsDx();defaultsTx();toast("Incerteza ativada");}else toast("Incerteza desativada");S.tab==="dx"?renderDx():renderTx();};
+
+/* ================= exemplos ================= */
+const DXP=[
+  {n:"Exemplo didático",pre:.20,se:.90,sp:.80},
+  {n:"Rastreamento de doença rara",pre:.01,se:.90,sp:.80},
+  {n:"Suspeita muito baixa",pre:.02,se:.90,sp:.90},
+  {n:"Suspeita clínica alta",pre:.80,se:.85,sp:.85},
+  {n:"Bom para descartar (SnNout)",pre:.15,se:.98,sp:.40},
+  {n:"Bom para confirmar (SpPin)",pre:.40,se:.50,sp:.98},
+  {n:"Teste excelente",pre:.20,se:.95,sp:.95},
+  {n:"Teste fraco",pre:.30,se:.60,sp:.60},
+  {n:"Teste inútil (LR = 1)",pre:.30,se:.70,sp:.30},
+];
+const TXP=[
+  {n:"Exemplo didático",pc:.20,rrr:.25},
+  {n:"Prevenção primária (risco baixo)",pc:.03,rrr:.25},
+  {n:"Prevenção secundária (risco alto)",pc:.25,rrr:.25},
+  {n:"Três pacientes, mesma RRR",pc:.20,rrr:.25,pins:[.02,.06]},
+  {n:"RRR impressionante, benefício pequeno",pc:.005,rrr:.50},
+  {n:"Doença grave, tratamento muito eficaz",pc:.50,rrr:.70},
+  {n:"Benefício × dano no limite",pc:.04,rrr:.25,ari:.01},
+  {n:"OR com desfecho frequente",mode:"or",or:.5,pc:.40},
+  {n:"Ensaio: 12% → 8%",mode:"trial",cer:.12,eer:.08,pc:.12},
+];
+DXP.forEach(p=>{const b=document.createElement("button");b.className="chip";b.textContent=p.n;b.onclick=()=>{
+  Object.assign(S.dx,{pre:p.pre,se:p.se,sp:p.sp,chain:[],pins:[]});fromSeSp();clearUncDx();if(S.unc)defaultsDx();renderDx();markOn("dxPresets",b);};$("dxPresets").appendChild(b);});
+TXP.forEach(p=>{const b=document.createElement("button");b.className="chip";b.textContent=p.n;b.onclick=()=>{
+  const t=S.tx;Object.assign(t,{pins:[],mode:p.mode||"rrr",pc:p.pc});
+  if(p.mode==="trial"){t.cer=p.cer;t.eer=p.eer;}else if(p.mode==="or"){t.or=p.or;}else{t.rrr=p.rrr;}
+  t.harm=!!p.ari;if(p.ari){t.ari=p.ari;t.sev=1;}
+  if(p.pins)t.pins=p.pins.map(x=>({pc:x,rrr:p.rrr}));clearUncTx();if(S.unc)defaultsTx();renderTx();markOn("txPresets",b);};$("txPresets").appendChild(b);});
+function markOn(id,b){document.querySelectorAll(`#${id} .chip`).forEach(x=>x.classList.toggle("on",x===b));}
+
+/* ================= saiba mais ================= */
+function yoursFagan(){const d=S.dx;if(dxMasked())return"";if(!(has(d.pre)&&(has(d.lrp)||has(d.lrn))))return"";
+  const o=d.pre/(1-d.pre);let h=`<div class="yours"><h4>Com os seus números</h4><p>Pré-teste ${pc(d.pre)} → odds pré = ${fmt(d.pre*100,1)} ÷ ${fmt((1-d.pre)*100,1)} = ${fmt(o,3)}.</p>`;
+  if(has(d.lrp)){const op=o*d.lrp;h+=`<p>Positivo: ${fmt(o,3)} × ${lr(d.lrp)} = ${fmt(op,3)} → probabilidade = ${fmt(op,3)} ÷ (1 + ${fmt(op,3)}) = <b>${pc(op/(1+op))}</b>.</p>`;}
+  if(has(d.lrn)){const on=o*d.lrn;h+=`<p>Negativo: ${fmt(o,3)} × ${lr(d.lrn)} = ${fmt(on,4)} → probabilidade = <b>${pc(on/(1+on))}</b>.</p>`;}
+  return h+`</div>`;}
+function yoursDots(){const d=S.dx;if(dxMasked())return"";if(!(has(d.pre)&&has(d.se)&&has(d.sp)))return"";
+  const D=Math.round(1000*d.pre),TP=Math.round(D*d.se),H=1000-D,FP=Math.round(H*(1-d.sp));
+  return `<div class="yours"><h4>Com os seus números</h4><p>${D} doentes → ${TP} positivos verdadeiros. ${H} sem doença → ${FP} falsos positivos. VPP = ${TP} ÷ (${TP} + ${FP}) = <b>${TP+FP?pc(TP/(TP+FP)):"—"}</b>.</p></div>`;}
+function yoursChat(){const t=S.tx,r=rrrFor(t.pc);if(txMasked())return"";if(!(has(t.pc)&&has(r)&&r>0))return"";const a=t.pc*r;
+  return `<div class="yours"><h4>Com os seus números</h4><p>RRA = ${pcx(t.pc)} × ${fmt(r*100,1)}% = ${fmt(a*100,2)} p.p. → NNT = 1 ÷ ${fmt(a,4)} = ${fmt(1/a,1)} → arredondado para cima: <b>${nnt(1/a)}</b>.</p></div>`;}
+const LEARN={
+fagan:{t:"Nomograma de Fagan",h:()=>`
+<p>Ele responde à pergunta que interessa ao paciente: <b>“com este resultado, qual a probabilidade de eu ter a doença?”</b>. Sensibilidade e especificidade sozinhas não respondem isso. Elas descrevem o teste em pessoas que <i>já sabemos</i> se têm ou não a doença; na clínica, é justamente isso que não sabemos.</p>
+<h4>As três escalas</h4>
+<ul>
+<li><b>Esquerda: probabilidade pré-teste.</b> O quanto você suspeita antes do exame. Vem da prevalência no seu serviço, de um escore clínico (como Wells) ou da história e do exame físico.</li>
+<li><b>Meio: razão de verossimilhança (LR).</b> O quanto o resultado muda a suspeita. LR = 1 não muda nada; acima de 1 aumenta; abaixo de 1 diminui.</li>
+<li><b>Direita: probabilidade pós-teste.</b> A suspeita atualizada, depois do resultado.</li>
+</ul>
+<div class="f">LR+ = Sensibilidade ÷ (1 − Especificidade)<br>LR− = (1 − Sensibilidade) ÷ Especificidade</div>
+<h4>Como usar</h4>
+<p>No papel, você coloca uma régua sobre a pré-teste e sobre a LR e lê onde ela cruza a escala da direita. Aqui a régua é a linha colorida: a verde é o resultado positivo e a laranja, o negativo.</p>
+<h4>Por que uma linha reta funciona</h4>
+<p>O teorema de Bayes fica simples quando escrito com <b>odds</b>: a probabilidade de o evento ocorrer dividida pela probabilidade de não ocorrer. Uma probabilidade de 20% corresponde a odds de 20 ÷ 80 = 0,25, ou “1 para 4”.</p>
+<p style="font-size:13.5px;color:var(--muted)">Atenção à terminologia: em epidemiologia, <b>chance</b> é a tradução de <i>odds</i> (daí “razão de chances” para <i>odds ratio</i>). Probabilidade e chance não são sinônimos: 20% de probabilidade equivalem a uma chance de 0,25.</p>
+<div class="f">odds pós-teste = odds pré-teste × LR</div>
+<p>Com logaritmos, a multiplicação vira soma. As escalas do nomograma são desenhadas em logaritmo das odds, e somar dois valores equivale a alinhá-los numa reta. É a mesma ideia da régua de cálculo.</p>
+<h4>Exemplo passo a passo</h4>
+<ol>
+<li>Pré-teste de 20%: odds = 0,25.</li>
+<li>Teste com sensibilidade 90% e especificidade 80%: LR+ = 0,90 ÷ 0,20 = 4,5; LR− = 0,10 ÷ 0,80 = 0,125.</li>
+<li>Positivo: 0,25 × 4,5 = 1,125. De volta a probabilidade: 1,125 ÷ 2,125 = <b>53%</b>.</li>
+<li>Negativo: 0,25 × 0,125 = 0,031 → <b>3%</b>.</li>
+</ol>
+${yoursFagan()}
+<h4>Regra de bolso para LRs</h4>
+<table><tr><th>LR</th><th>Efeito aproximado*</th></tr>
+<tr><td>10</td><td>+45 pontos percentuais</td></tr><tr><td>5</td><td>+30</td></tr><tr><td>2</td><td>+15</td></tr><tr><td>1</td><td>nenhum</td></tr><tr><td>0,5</td><td>−15</td></tr><tr><td>0,2</td><td>−30</td></tr><tr><td>0,1</td><td>−45</td></tr></table>
+<p style="font-size:13px;color:var(--muted)">*Vale para pré-testes entre 10% e 90% (McGee, 2002).</p>
+<div class="trap"><h4>Armadilha clássica</h4><p>“O teste tem 90% de sensibilidade, então quem deu positivo tem 90% de probabilidade de estar doente.” Errado. A sensibilidade é a probabilidade de dar positivo <i>entre os doentes</i>. A probabilidade de estar doente <i>entre os positivos</i> é o VPP, que depende da pré-teste. O pós-teste positivo do nomograma é exatamente o VPP para aquele paciente.</p></div>
+<p class="src">Fagan TJ. Nomogram for Bayes's theorem. N Engl J Med 1975. · McGee S. Simplifying likelihood ratios. J Gen Intern Med 2002. · Gonzaga YBM, Bacchi AD, Souza VBP. J Evid-Based Healthc 2024.</p>`},
+dxdots:{t:"1.000 pacientes como este",h:()=>`
+<p>Esta figura faz a mesma conta do nomograma, mas <b>contando pessoas</b> em vez de multiplicar probabilidades. Essa forma de apresentar, chamada de <b>frequências naturais</b>, faz estudantes e médicos acertarem muito mais problemas de probabilidade diagnóstica (Gigerenzer et al., 2007).</p>
+<h4>Como a figura é montada</h4>
+<ol>
+<li>Imagine 1.000 pacientes com a mesma probabilidade pré-teste.</li>
+<li><b>Doentes</b> = 1.000 × pré-teste. Desses, a proporção igual à sensibilidade testa positivo: são os <b>verdadeiros positivos</b> (pontos verdes cheios). O restante são os <b>falsos negativos</b> (círculos verdes vazios): doentes que o teste deixou passar.</li>
+<li><b>Sem doença</b> = o restante. Desses, a proporção igual à especificidade testa negativo: são os <b>verdadeiros negativos</b> (pontos cinza). O restante são os <b>falsos positivos</b> (pontos laranja): sadios que o teste acusou.</li>
+</ol>
+<h4>Como ler</h4>
+<div class="f">VPP = verdadeiros positivos ÷ todos os positivos<br>VPN = verdadeiros negativos ÷ todos os negativos</div>
+<p>Compare os pontos verdes cheios com os laranja: de todos que receberam “positivo”, quantos têm a doença?</p>
+<h4>Exemplo</h4>
+<p>Pré-teste 20%, sensibilidade 90%, especificidade 80%:</p>
+<ul><li>200 doentes → 180 positivos verdadeiros e 20 falsos negativos.</li><li>800 sem doença → 640 negativos verdadeiros e 160 falsos positivos.</li><li>Positivos: 180 + 160 = 340, dos quais 180 doentes → VPP = <b>53%</b>. O mesmo valor do nomograma.</li></ul>
+${yoursDots()}
+<div class="trap"><h4>Por que a prevalência muda tudo</h4><p>Use o <b>mesmo teste</b> com pré-teste de 1%: são 10 doentes (9 positivos) e 990 sem doença (198 falsos positivos). Dos 207 positivos, só 9 estão doentes: VPP de <b>4%</b>. O teste não piorou; mudou quem está sendo testado. É por isso que rastrear doenças raras gera tantos falsos positivos. Experimente o exemplo “Rastreamento de doença rara”.</p></div>
+<p class="src">Gigerenzer G et al. Helping doctors and patients make sense of health statistics. Psychol Sci Public Interest 2007. · Altman DG, Bland JM. Diagnostic tests 2: predictive values. BMJ 1994.</p>`},
+leaf:{t:"O mesmo teste em qualquer suspeita",h:()=>`
+<p>O nomograma mostra um paciente de cada vez. Este gráfico mostra <b>todos os pacientes possíveis</b>: para cada probabilidade pré-teste (eixo horizontal), a pós-teste correspondente (eixo vertical).</p>
+<h4>Como ler</h4>
+<ul>
+<li><b>Linha tracejada diagonal:</b> um teste com LR = 1, que não informa nada (pós = pré). É como jogar uma moeda.</li>
+<li><b>Curva verde:</b> a pós-teste se o resultado for positivo. Fica acima da diagonal.</li>
+<li><b>Curva laranja:</b> a pós-teste se o resultado for negativo. Fica abaixo da diagonal.</li>
+<li><b>Linha vertical e pontos:</b> o seu paciente.</li>
+</ul>
+<h4>O que o formato ensina</h4>
+<p>A distância vertical entre a curva e a diagonal é <b>o quanto o teste acrescenta</b>. Ela é maior nas probabilidades intermediárias, entre 20% e 80%, e quase some nas pontas. Quando você já tem quase certeza de que o paciente está doente, ou de que está saudável, o exame acrescenta pouco. Nessas situações, um resultado contrário é mais provavelmente um erro do teste do que uma surpresa verdadeira.</p>
+<p>Quanto mais extremas as LRs, mais as curvas se afastam da diagonal. Um teste com LR+ de 20 “puxa” a curva quase até o topo; um com LR+ de 1,5 quase não sai da diagonal.</p>
+<h4>Limiares de decisão</h4>
+<p>No modo <b>Calcular</b>, a linha horizontal é o limiar de tratamento (tratar acima dela) e a faixa vertical amarela mostra as pré-testes em que vale testar. No modo <b>Digitar</b>, as faixas coloridas mostram três zonas (Pauker e Kassirer, 1980):</p>
+<ul><li><b>Verde:</b> probabilidade tão baixa que o diagnóstico é descartado sem testar.</li><li><b>Amarela:</b> incerteza; vale a pena testar.</li><li><b>Vermelha:</b> probabilidade alta o bastante para tratar (ou confirmar) sem mais exames.</li></ul>
+<p>Um teste só é útil para um paciente se algum resultado levar a pós-teste para <b>outra faixa</b>. Se as duas curvas, na altura da pré-teste dele, ficam na mesma faixa, o exame não muda a conduta.</p>
+<div class="trap"><h4>Experimente</h4><p>Escolha “Teste excelente” e arraste a pré-teste para 1%. Mesmo com LR+ de 19, o positivo leva a cerca de 16%. Um bom teste não compensa uma suspeita muito baixa.</p></div>
+<p class="src">Pauker SG, Kassirer JP. The threshold approach to clinical decision making. N Engl J Med 1980.</p>`},
+chat:{t:"Nomograma do NNT",h:()=>`
+<p>Ele responde: <b>“quantos pacientes como este preciso tratar para evitar um desfecho?”</b>. Esse número é o NNT (número necessário para tratar).</p>
+<h4>As três escalas</h4>
+<ul>
+<li><b>Esquerda: risco basal.</b> A probabilidade de o desfecho acontecer <i>sem</i> tratamento, no período estudado. Vem de escores prognósticos, de coortes ou do grupo controle de ensaios com pacientes parecidos.</li>
+<li><b>Meio: redução relativa do risco (RRR).</b> O efeito proporcional do tratamento, vindo de ensaios clínicos e metanálises.</li>
+<li><b>Direita: NNT.</b></li>
+</ul>
+<h4>Os conceitos, em sequência</h4>
+<div class="f">RR = risco no tratado ÷ risco no controle<br>RRR = 1 − RR<br>RRA = risco basal × RRR<br>NNT = 1 ÷ RRA</div>
+<p>A RRR diz “o tratamento corta o risco em X%”. A RRA diz “quantos pontos percentuais de risco o paciente perde de fato”. O NNT é a RRA virada ao contrário.</p>
+<h4>Por que uma reta funciona</h4>
+<p>Como NNT = 1 ÷ (risco basal × RRR), em logaritmos: log NNT = −log(risco basal) − log(RRR). Mais uma vez, uma soma, e somas viram linhas retas em escalas logarítmicas.</p>
+<h4>Exemplo: o mesmo remédio em dois pacientes</h4>
+<table><tr><th></th><th>Risco basal</th><th>RRR</th><th>RRA</th><th>NNT</th></tr>
+<tr><td>Alto risco</td><td>20%</td><td>25%</td><td>5 p.p.</td><td>20</td></tr>
+<tr><td>Baixo risco</td><td>2%</td><td>25%</td><td>0,5 p.p.</td><td>200</td></tr></table>
+<p>Mesma eficácia relativa, benefício absoluto dez vezes menor. Use “Fixar paciente” para comparar as duas linhas.</p>
+${yoursChat()}
+<div class="trap"><h4>Cuidados</h4><ul>
+<li><b>RRR constante é uma suposição.</b> Individualizar o NNT pressupõe que o efeito relativo seja o mesmo em riscos diferentes. RR e OR costumam ser razoavelmente constantes; a diferença absoluta de risco, não (Furukawa et al., 2002).</li>
+<li><b>O NNT tem prazo.</b> Diga sempre o desfecho e o período: “NNT de 20 em 5 anos para evitar um AVC”.</li>
+<li><b>Arredonde para cima.</b> 11,1 vira 12: não se trata uma fração de paciente.</li></ul></div>
+<p class="src">Chatellier G et al. The number needed to treat: a clinically useful nomogram in its proper context. BMJ 1996. · Laupacis A et al. N Engl J Med 1988. · Furukawa TA et al. Int J Epidemiol 2002.</p>`},
+txdots:{t:"Pacientes como este, tratados",h:()=>`
+<p>Cada ponto é um paciente com o mesmo risco basal, e <b>todos recebem o tratamento</b>. A figura mostra o que acontece, em média, com cada um.</p>
+<h4>As cores</h4>
+<ul>
+<li><b>Verde:</b> teria o desfecho, mas o tratamento o evitou. <b>Só esses se beneficiam.</b></li>
+<li><b>Vermelho:</b> tem o desfecho mesmo tratado; o tratamento não foi suficiente.</li>
+<li><b>Cinza:</b> não teria o desfecho de qualquer forma; foi tratado sem necessidade.</li>
+<li><b>Círculo laranja</b> (se o dano estiver ativado): sofre um efeito adverso do tratamento.</li>
+</ul>
+<h4>A lição central</h4>
+<p>Mesmo com um tratamento eficaz, <b>a maioria dos tratados não muda de destino</b>: ou nunca teria o desfecho, ou o tem assim mesmo. E não sabemos antecipadamente quem será o paciente verde. O NNT é só outra forma de dizer isso: com NNT de 20, a cada 20 tratados, 1 é verde.</p>
+<h4>Exemplo</h4>
+<p>Risco basal 20%, RRR 25%, 100 pacientes: 20 teriam o desfecho. O tratamento evita 5 (20 × 25%). Os outros 15 têm o desfecho mesmo assim, e 80 nunca o teriam.</p>
+<h4>E o dano?</h4>
+<p>Compare os pontos verdes com os círculos laranja. Se o tratamento causa sangramento em 1 de cada 100 e evita o desfecho em 5 de cada 100, há 5 benefícios para cada dano. Essa comparação é a <b>LHH</b> (probabilidade de ajudar versus prejudicar), e ela muda quando o risco basal muda.</p>
+<p>Quando o risco basal é menor que 3%, a figura passa a mostrar 1.000 pacientes, para que os poucos beneficiados continuem visíveis.</p>
+<p class="src">Cook RJ, Sackett DL. The number needed to treat: a clinically useful measure of treatment effect. BMJ 1995.</p>`},
+dados:{t:"Seus dados: o que informar",h:()=>`
+<p>O nomograma precisa de duas coisas: <b>o quanto você suspeita antes do exame</b> e <b>o quanto o exame é bom</b>. Todo o resto é calculado.</p>
+<h4>Probabilidade pré-teste</h4>
+<p>É a probabilidade de o paciente ter a doença <i>antes</i> do resultado. Ela pode vir de:</p>
+<ul><li><b>prevalência</b> da doença no tipo de serviço e de paciente que você atende (a prevalência num ambulatório de atenção primária é muito diferente da de um pronto-socorro);</li>
+<li><b>escores clínicos validados</b>, que convertem sinais e sintomas em probabilidade (por exemplo, Wells para embolia pulmonar);</li>
+<li>sua <b>avaliação clínica</b> da história e do exame físico.</li></ul>
+<p>Se estiver em dúvida entre dois valores, use o botão <b>Incerteza</b> e informe a faixa.</p>
+<h4>Sensibilidade e especificidade</h4>
+<p>Vêm de estudos de acurácia, em que o exame é comparado com um padrão-ouro:</p>
+<table class="mini2x2"><tr><th></th><th>Doença presente</th><th>Doença ausente</th></tr><tr><th>Teste +</th><td>a (VP)</td><td>b (FP)</td></tr><tr><th>Teste −</th><td>c (FN)</td><td>d (VN)</td></tr></table>
+<div class="f">Sensibilidade = a ÷ (a + c): positivos entre os doentes<br>Especificidade = d ÷ (b + d): negativos entre os sadios</div>
+<p>Prefira valores de revisões sistemáticas de acurácia diagnóstica e de estudos com pacientes parecidos com o seu.</p>
+<h4>Nomear o caso (opcional)</h4>
+<p>Se quiser, escreva o nome da doença e do exame. As leituras passam a dizer, por exemplo, “um D-dímero positivo leva a 53%”. Nada muda nos cálculos, e tudo funciona sem esses nomes.</p>
+<h4>…ou as razões de verossimilhança</h4>
+<p>Muitos artigos e livros já trazem as LRs prontas. Digite-as diretamente e o app deduz sensibilidade e especificidade (quando LR+ &gt; 1 e LR− &lt; 1). O caminho inverso também é automático:</p>
+<div class="f">LR+ = Se ÷ (1 − Esp) · LR− = (1 − Se) ÷ Esp</div>
+<div class="trap"><h4>Dicas</h4><ul>
+<li><b>SnNout:</b> teste muito sensível, se negativo, ajuda a descartar. <b>SpPin:</b> teste muito específico, se positivo, ajuda a confirmar. São atalhos úteis, mas as LRs dizem o quanto.</li>
+<li>Se sensibilidade + especificidade ≤ 100%, o teste não separa doentes de sadios: um positivo não aumenta a suspeita.</li>
+<li>Os exemplos no topo carregam cenários prontos; <b>Zerar</b> limpa tudo.</li></ul></div>`},
+dxres:{t:"Resultados e leitura",h:()=>`
+<p>Os dois quadros coloridos respondem à pergunta clínica: <b>com este resultado, qual a probabilidade de doença?</b></p>
+<ul><li><b>Se der positivo:</b> a probabilidade pós-teste após um resultado positivo. É o <b>VPP</b> para a pré-teste deste paciente.</li>
+<li><b>Se der negativo:</b> a probabilidade de <i>ainda</i> ter a doença após um negativo. É 1 − <b>VPN</b>.</li></ul>
+<h4>Pontos percentuais (p.p.)</h4>
+<p>Abaixo de cada valor aparece a mudança em <b>pontos percentuais</b>: de 20% para 53% são +33 p.p. Não confunda com variação percentual: sair de 20% para 53% é um aumento de 165% em termos relativos. Na clínica, o que interessa é a probabilidade final e quanto ela se moveu em p.p.</p>
+<h4>O quadro de leitura</h4>
+<p>Resume o caso em texto. Com os <b>limiares</b> ativados, diz se vale testar e qual conduta cada resultado indica, e os quadros ganham etiquetas como “Tratar” ou “Não tratar”. Com a <b>incerteza</b> ativada, mostra as faixas e diz se a conclusão se mantém em todas elas.</p>
+<h4>Como comunicar ao paciente</h4>
+<p>Troque a porcentagem por pessoas: “de cada 100 pessoas com o seu quadro e esse resultado, cerca de 53 têm a doença”. Frequências naturais são entendidas muito melhor que probabilidades condicionais.</p>`},
+seq:{t:"Teste em sequência",h:()=>`
+<p>Na prática, raramente se decide com um exame só. A probabilidade <b>pós-teste</b> de um exame vira a <b>pré-teste</b> do próximo. Em odds, as LRs se multiplicam:</p>
+<div class="f">odds final = odds inicial × LR₁ × LR₂ × …</div>
+<h4>Exemplo</h4>
+<p>Pré-teste de 20% (odds 0,25). Primeiro exame positivo, LR+ 4,5: odds 1,125 → <b>53%</b>. Segundo exame positivo, LR+ 6: odds 1,125 × 6 = 6,75 → <b>87%</b>.</p>
+<p>Use os botões: “Positivo → novo pré-teste” leva o resultado para a escala da esquerda. Depois, digite a sensibilidade e a especificidade do segundo exame. “Desfazer” volta um passo.</p>
+<div class="trap"><h4>A condição que quase sempre é esquecida</h4>
+<p>Multiplicar LRs só vale se os exames forem <b>condicionalmente independentes</b>: o erro de um não pode tornar o erro do outro mais provável. Repetir o mesmo exame, ou usar dois exames que medem o mesmo fenômeno (duas medidas de inflamação, dois métodos de imagem para a mesma lesão), superestima a certeza final.</p></div>
+<h4>Em série ou em paralelo?</h4>
+<ul><li><b>Em série</b> (só segue para o segundo se o primeiro for positivo, e só considera doente se os dois forem): aumenta a especificidade.</li>
+<li><b>Em paralelo</b> (qualquer positivo conta): aumenta a sensibilidade.</li></ul>
+<p>Com a incerteza ativada, a faixa do resultado anterior passa a ser a faixa da nova pré-teste.</p>`},
+desafio:{t:"Modo desafio",h:()=>S.tab==="dx"?`
+<p>Nosso cérebro é ruim em probabilidade condicional. Num estudo clássico, médicos estimaram em cerca de 75% a probabilidade de câncer após uma mamografia positiva, quando o valor correto, com prevalência de 1%, era menos de 10% (Eddy, 1982). O erro tem nome: <b>negligência da taxa-base</b>, ou esquecer a pré-teste.</p>
+<h4>Como funciona</h4>
+<ol><li>Ative o desafio. Os resultados, a linha do nomograma e as figuras que dariam a resposta ficam ocultos.</li>
+<li>Monte um caso: digite os dados, escolha um exemplo ou toque em “Caso aleatório”.</li>
+<li>Escreva sua estimativa para o positivo e para o negativo e toque em “Revelar”.</li>
+<li>Compare com o valor real e leia o comentário sobre o tipo de erro.</li></ol>
+<p>Erro de até 5 p.p. conta como acerto. O placar mostra rodadas, acertos e erro médio, e zera quando a página é recarregada.</p>
+<h4>Estratégias para estimar melhor</h4>
+<ul><li><b>Pense em 1.000 pessoas:</b> quantas têm a doença? Quantas dessas dão positivo? E quantas das sadias?</li>
+<li><b>Use odds:</b> 20% = 1 para 4. Multiplique pela LR e converta de volta.</li>
+<li><b>Regra de bolso</b> (pré-teste entre 10% e 90%): LR 2 ≈ +15 p.p., LR 5 ≈ +30, LR 10 ≈ +45; LR 0,5 ≈ −15, 0,2 ≈ −30, 0,1 ≈ −45.</li></ul>
+<p class="src">Eddy DM. Probabilistic reasoning in clinical medicine: problems and opportunities. In: Kahneman D, Slovic P, Tversky A. Judgment under uncertainty. 1982. · McGee S. J Gen Intern Med 2002.</p>`:`
+<p>Reduções relativas soam impressionantes. “Reduz o risco em 50%” parece ótimo, mas pode significar 2 em 1.000 virarem 1 em 1.000. Ler a RRR como se fosse absoluta é um dos erros mais comuns na interpretação de ensaios clínicos (Gigerenzer et al., 2007).</p>
+<h4>Como funciona</h4>
+<ol><li>Ative o desafio. NNT, redução absoluta, a linha do nomograma e as figuras ficam ocultos.</li>
+<li>Monte um caso ou toque em “Caso aleatório”.</li>
+<li>Escreva quantos pacientes você acha que precisam ser tratados para evitar um desfecho e toque em “Revelar”.</li></ol>
+<p>Ficar a menos de 20% do NNT real conta como acerto. Se você calcular 1 ÷ RRR, o app avisa que a redução relativa foi usada como absoluta.</p>
+<h4>A conta de cabeça</h4>
+<div class="f">RRA (p.p.) = risco basal (%) × RRR (%) ÷ 100<br>NNT = 100 ÷ RRA (p.p.)</div>
+<p>Exemplo: risco basal 20% e RRR 25% → RRA = 5 p.p. → NNT = 20.</p>
+<p class="src">Gigerenzer G et al. Psychol Sci Public Interest 2007. · Laupacis A et al. N Engl J Med 1988.</p>`},
+txdados:{t:"Seus dados: o que informar",h:()=>`
+<p>Para individualizar o benefício de um tratamento, são necessárias duas informações: <b>o risco do paciente sem tratamento</b> e <b>o efeito relativo do tratamento</b>.</p>
+<h4>Risco basal</h4>
+<p>É a probabilidade de o desfecho acontecer <i>sem</i> o tratamento, <b>no mesmo período</b> do estudo que forneceu o efeito. Fontes:</p>
+<ul><li><b>escores prognósticos</b> validados (cardiovasculares, de sangramento, de gravidade de embolia pulmonar etc.);</li>
+<li>a taxa de eventos do <b>grupo controle</b> de ensaios com pacientes parecidos;</li>
+<li>coortes da população que você atende.</li></ul>
+<h4>O efeito do tratamento: quatro formas de informar</h4>
+<ul><li><b>RRR</b> (redução relativa do risco): “reduz o risco em 25%”.</li>
+<li><b>RR</b> (risco relativo): risco no tratado ÷ risco no controle. RR 0,75 = RRR 25%.</li>
+<li><b>OR</b> (odds ratio): comum em metanálises. O app converte em RR para o risco basal do seu paciente, porque a OR exagera o efeito quando o desfecho é frequente.</li>
+<li><b>Ensaio:</b> digite a taxa de eventos no controle (CER) e no tratado (EER). O app calcula a RRR e mostra o NNT médio do ensaio, para comparar com o NNT do seu paciente.</li></ul>
+<h4>Nomear o caso (opcional)</h4>
+<p>Você pode escrever a intervenção, o desfecho e o período. As leituras ficam concretas: “tratar 20 pacientes com estatina por 5 anos para evitar infarto em um paciente”. Se não souber o período, deixe em branco: o app funciona igual, mas lembre que o NNT sempre vale para o tempo de seguimento do estudo de onde veio o efeito.</p>
+<p>Prefira o efeito de <b>metanálises</b> e, quando houver opção, o RR de efeitos aleatórios, que se mostrou razoavelmente constante entre riscos basais diferentes (Furukawa et al., 2002).</p>
+<div class="trap"><h4>Cuidados</h4><ul><li>Desfecho e período precisam ser os mesmos no risco basal e no efeito: não combine risco de morte em 10 anos com efeito sobre infarto em 1 ano.</li>
+<li>O efeito vale para pacientes parecidos com os do estudo.</li></ul></div>`},
+txres:{t:"Resultados e leitura",h:()=>`
+<ul><li><b>NNT</b> (número necessário para tratar): quantos pacientes como este precisam ser tratados, pelo período do estudo, para evitar <b>um</b> desfecho. Quanto menor, maior o benefício; NNT 1 seria um tratamento que funciona em todos. É sempre arredondado para cima.</li>
+<li><b>Redução absoluta (RRA):</b> quantos pontos percentuais de risco o paciente perde. Também aparece como desfechos evitados a cada 1.000 tratados.</li>
+<li><b>NNH</b> (com o dano ativado): quantos precisam ser tratados para <b>causar</b> um dano.</li>
+<li><b>Benefício ÷ dano (LHH):</b> quantos benefícios para cada dano, já ponderado pela gravidade. Acima de 1 favorece tratar.</li></ul>
+<h4>Como ler um NNT</h4>
+<p>Um NNT só tem sentido com <b>desfecho e prazo</b>: “NNT 20 em 5 anos para evitar um AVC”. Em prevenção primária, NNTs na casa das centenas são comuns; em doenças graves com tratamentos muito eficazes, podem ser menores que 5. Não existe NNT “bom” em abstrato: ele precisa ser pesado contra danos, custos e as preferências do paciente.</p>
+<h4>O quadro de leitura</h4>
+<p>Resume o caso. Com o dano ativado, diz a partir de que risco basal o tratamento compensa. Com a incerteza ativada, mostra a faixa do NNT e diz se a conclusão se mantém.</p>
+<h4>Como comunicar ao paciente</h4>
+<p>“Se 100 pessoas como você tomarem este remédio por 3 meses, cerca de 5 vão evitar o problema; as outras 95 teriam o mesmo resultado tomando ou não.” A figura dos pacientes tratados mostra exatamente isso.</p>`},
+dano:{t:"Benefício e dano",h:()=>`
+<p>Todo tratamento tem efeitos adversos. Para decidir, é preciso comparar o que ele evita com o que ele causa, na mesma escala.</p>
+<h4>O que informar</h4>
+<ul><li><b>Aumento absoluto do risco de dano:</b> quantos pontos percentuais o tratamento acrescenta ao risco de um efeito adverso importante (sangramento grave, por exemplo), no mesmo período do benefício.</li>
+<li><b>Peso do dano:</b> quantas vezes esse dano é pior que o desfecho evitado, <b>na visão do paciente</b>. Peso 1: tão ruim quanto. Peso 0,5: metade. Peso 2: o dobro.</li></ul>
+<div class="f">NNH = 1 ÷ aumento absoluto do risco de dano<br>LHH = (1 ÷ NNT) ÷ (peso × 1 ÷ NNH)</div>
+<h4>Exemplo</h4>
+<p>Risco basal 4%, RRR 25% → RRA 1 p.p. (NNT 100). Sangramento grave +1 p.p. (NNH 100), peso 1 → LHH = 1: um benefício para cada dano. Com risco basal de 20%, o NNT cai para 20 e a LHH sobe para 5.</p>
+<p>O gráfico “NNT conforme o risco basal” mostra o ponto de equilíbrio: abaixo dele, o dano ponderado supera o benefício.</p>
+<div class="trap"><h4>Suposições</h4><ul><li>O app supõe que o risco de dano não depende do risco basal do desfecho, o que é razoável para muitos efeitos adversos, mas nem sempre.</li><li>O peso é um julgamento de valor. Construí-lo com o paciente é o centro da decisão compartilhada.</li></ul></div>
+<p class="src">Straus SE et al. Evidence-Based Medicine: How to Practice and Teach EBM. Elsevier. · Chatellier G et al. BMJ 1996.</p>`},
+howto:{t:"Como usar este aplicativo",h:()=>`
+<p>O Nomo LAB transforma números de estudos em decisões sobre <b>um paciente</b>. Ele tem duas abas:</p>
+<ul><li><b>Diagnóstico:</b> com este exame, qual a probabilidade de o paciente ter a doença? (nomograma de Fagan)</li>
+<li><b>Tratamento:</b> quantos pacientes como este precisam ser tratados para evitar um desfecho? (nomograma do NNT)</li></ul>
+<h4>Diagnóstico em 4 passos</h4>
+<ol><li>Digite a <b>probabilidade pré-teste</b>: sua suspeita antes do exame.</li>
+<li>Digite a <b>sensibilidade</b> e a <b>especificidade</b> do exame, ou as LRs.</li>
+<li>Leia os quadros <b>Se der positivo</b> e <b>Se der negativo</b>.</li>
+<li>Explore o nomograma e as figuras abaixo dele.</li></ol>
+<h4>Tratamento em 4 passos</h4>
+<ol><li>Digite o <b>risco basal</b>: a probabilidade do desfecho sem tratamento, no período considerado.</li>
+<li>Digite o <b>efeito</b> do tratamento: RRR, RR, OR ou os dados do ensaio.</li>
+<li>Leia o <b>NNT</b> e a redução absoluta.</li>
+<li>Use <b>Fixar paciente</b> e mude o risco basal para comparar pacientes.</li></ol>
+<h4>Ferramentas</h4>
+<div class="tools">
+<div><b>Exemplos</b><span>Cenários prontos no topo de cada aba. Deslize para ver todos.</span></div>
+<div><b>Zerar</b><span>Limpa os dados da aba.</span></div>
+<div><b>Nomograma</b><span>Toque em uma escala para marcar um valor e arraste para ajustar. Os campos numéricos e o nomograma se atualizam juntos.</span></div>
+<div><b>Fixar linha / paciente</b><span>Mantém o caso atual desenhado (até 3) para comparar com o próximo.</span></div>
+<div><b>Limiares</b><span>Diz se vale testar e qual conduta cada resultado indica (Pauker e Kassirer).</span></div>
+<div><b>Incerteza</b><span>Botão na barra das abas. Mostra faixas e intervalos de confiança, inclusive no nomograma.</span></div>
+<div><b>Modo desafio</b><span>Esconde os resultados para você estimar antes de ver.</span></div>
+<div><b>Teste em sequência</b><span>Usa o resultado de um exame como ponto de partida do próximo.</span></div>
+<div><b>Ponto de corte</b><span>Na curva ROC, mostra a troca entre sensibilidade e especificidade.</span></div>
+<div><b>Dano</b><span>Na aba Tratamento, compara benefício e efeito adverso.</span></div>
+<div><b>Saiba mais</b><span>Em cada painel, uma explicação do conceito com exemplo resolvido.</span></div>
+<div><b>Adicionar atalho</b><span>Coloca o app na tela inicial do celular.</span></div></div>
+<h4>No celular</h4>
+<ul><li>A ordem é: dados → resultado → nomograma → figuras. Role para baixo para ver tudo.</li>
+<li>Para valores exatos, prefira os campos numéricos; o nomograma é para ver e explorar.</li>
+<li>Vírgula e ponto funcionam como separador decimal.</li></ul>
+<h4>Sugestão de uso em aula</h4>
+<ol><li><b>Desafio (10 min):</b> três casos aleatórios; a turma estima antes de revelar.</li>
+<li><b>Frequências naturais (10 min):</b> “Rastreamento de doença rara” e a matriz de 1.000 pacientes explicam o erro.</li>
+<li><b>Decisão (15 min):</b> ative limiares e incerteza e discuta quando o exame muda a conduta.</li>
+<li><b>Tratamento (15 min):</b> “Três pacientes, mesma RRR” e o desafio do NNT.</li></ol>
+<div class="trap"><h4>Limitações</h4><ul><li>O app supõe estudos válidos e aplicáveis ao seu paciente. Ele não corrige vieses.</li><li>A curva ROC é teórica, construída a partir de um único par Se/Esp.</li><li>O NNT individualizado supõe efeito relativo constante entre riscos basais.</li></ul></div>
+<p class="src">Base: Fagan 1975; Chatellier et al. 1996; Pauker e Kassirer 1980; Furukawa et al. 2002; Simel et al. 1991; Altman 1998; Gigerenzer et al. 2007. Criado por André D. Bacchi.</p>`},
+unc:{t:"Incerteza",h:()=>`
+<p>Todo número que entra no nomograma é uma <b>estimativa</b>. O modo incerteza mostra o que acontece com a conclusão quando se leva isso a sério.</p>
+<h4>De onde vem a incerteza</h4>
+<ul>
+<li><b>Da pré-teste ou do risco basal.</b> Escores e impressões clínicas dão faixas, não pontos: “entre 15% e 30%” é mais honesto que “20%”. Informe a faixa que você considera plausível para o paciente.</li>
+<li><b>Do teste ou do tratamento.</b> Sensibilidade, especificidade e RRR vêm de estudos com amostras finitas e têm intervalo de confiança (IC 95%). Estudos pequenos dão intervalos largos.</li>
+</ul>
+<h4>Como o app calcula</h4>
+<ul>
+<li><b>LRs:</b> o IC é calculado na escala logarítmica a partir de sensibilidade, especificidade e do tamanho do estudo (Simel et al., 1991). Se você informar o IC de Se e Esp em vez do número de pacientes, o app deduz o tamanho equivalente. O IC de Se e Esp pelo número de pacientes usa o método de Wilson.</li>
+<li><b>Ensaio clínico:</b> o IC do RR usa o método logarítmico a partir dos eventos e do número de pacientes em cada grupo.</li>
+<li><b>Faixas de resultado:</b> o app combina os extremos (menor pré-teste com menor LR; maior pré-teste com maior LR). É uma faixa <b>conservadora</b>, que mostra o pior e o melhor cenário plausível. Não é um IC 95% formal da pós-teste.</li>
+</ul>
+<h4>Como ler no nomograma</h4>
+<p>As barras grossas sobre as escalas marcam as faixas. O <b>leque</b> sombreado é o conjunto de todas as linhas possíveis entre elas, e onde ele toca a escala da direita fica a faixa de resultados. Um leque estreito indica uma conclusão firme; um leque largo, uma conclusão frágil.</p>
+<h4>A pergunta que importa: a decisão muda?</h4>
+<p>Uma faixa larga não é problema se ela inteira ficar do mesmo lado do limiar de decisão. A conclusão é <b>robusta</b> quando o pior e o melhor cenário levam à mesma conduta. Quando a faixa cruza o limiar, vale refinar a pré-teste (mais história, outro exame) ou procurar evidência mais precisa. Ative os limiares para o app fazer essa checagem.</p>
+<h4>Quando o IC do tratamento inclui “sem efeito”</h4>
+<p>Se o IC da RRR inclui zero, o NNT vai de um número finito até infinito e, do outro lado, vira NNH (número necessário para causar dano). Altman (1998) propôs escrever assim: “NNT (benefício) 12 a ∞ a NNH (dano) 80”. Não se deve relatar só o NNT pontual nesses casos.</p>
+<div class="trap"><h4>O que o IC não mostra</h4><ul>
+<li>O IC mede só o erro por acaso. Viés de espectro, de verificação ou de seleção não aparecem nele: um estudo grande e enviesado dá um IC estreito em torno do valor errado.</li>
+<li>A faixa de pré-teste é um julgamento clínico: seja honesto com ela.</li></ul></div>
+<p class="src">Simel DL, Samsa GP, Matchar DB. Likelihood ratios with confidence: sample size estimation for diagnostic test studies. J Clin Epidemiol 1991. · Altman DG. Confidence intervals for the number needed to treat. BMJ 1998. · Newcombe RG. Two-sided confidence intervals for the single proportion. Stat Med 1998.</p>`},
+thr:{t:"Limiares de decisão",h:()=>`
+<p>Pedir um exame só faz sentido se o resultado puder <b>mudar a conduta</b>. Pauker e Kassirer (1980) mostraram como calcular os pontos em que isso acontece a partir de três ingredientes: o benefício de tratar quem tem a doença, o dano de tratar quem não tem e o risco do próprio exame.</p>
+<h4>1. O limiar de tratamento</h4>
+<p>Sem nenhum exame, vale tratar quando o benefício esperado supera o dano esperado: p × Benefício &gt; (1 − p) × Dano. Resolvendo para p:</p>
+<div class="f">limiar de tratamento = Dano ÷ (Dano + Benefício)</div>
+<p>Se o tratamento evita 10 mortes a cada 100 doentes tratados e causa 2 mortes a cada 100 sadios tratados, o limiar é 2 ÷ 12 = <b>17%</b>. Acima disso, tratar faz mais bem que mal.</p>
+<h4>2. Os limiares do exame</h4>
+<p>O exame acrescenta informação, mas erra: gera falsos positivos (sadios tratados à toa) e falsos negativos (doentes sem tratamento). Pauker e Kassirer derivaram dois limiares para a probabilidade <b>pré-teste</b>:</p>
+<div class="f">limiar de teste = [(1 − Esp) × Dano + Risco do exame] ÷ [(1 − Esp) × Dano + Se × Benefício]<br>limiar de teste-tratamento = [Esp × Dano − Risco do exame] ÷ [Esp × Dano + (1 − Se) × Benefício]</div>
+<ul><li><b>Abaixo do limiar de teste:</b> a doença é tão improvável que nem um positivo justificaria tratar. Não testar, não tratar.</li>
+<li><b>Entre os dois:</b> testar e decidir pelo resultado.</li>
+<li><b>Acima do limiar de teste-tratamento:</b> a doença é tão provável que nem um negativo tiraria a indicação. Tratar sem testar.</li></ul>
+<p>Depois do exame, compara-se a probabilidade <b>pós-teste</b> com o limiar de tratamento. Com risco do exame igual a zero, o limiar de teste é exatamente a pré-teste em que um positivo leva ao limiar de tratamento. Veja isso no gráfico “O mesmo teste em qualquer suspeita”: a curva verde cruza a linha do limiar de tratamento na borda da faixa amarela.</p>
+<h4>Exemplo</h4>
+<p>Benefício 10, dano 2, risco do exame 0, sensibilidade 90%, especificidade 80%:</p>
+<ul><li>Limiar de tratamento: 2 ÷ 12 = 17%.</li><li>Limiar de teste: (0,2 × 2) ÷ (0,2 × 2 + 0,9 × 10) = 0,4 ÷ 9,4 = <b>4%</b>.</li><li>Limiar de teste-tratamento: (0,8 × 2) ÷ (0,8 × 2 + 0,1 × 10) = 1,6 ÷ 2,6 = <b>62%</b>.</li></ul>
+<p>Se o exame tiver algum risco (por exemplo, 0,5 na mesma escala), a faixa de testar encolhe para 10% a 42%.</p>
+<div class="trap"><h4>O que muda os limiares</h4><ul>
+<li><b>Tratamento arriscado</b> (dano alto): o limiar de tratamento sobe; exige-se mais certeza.</li>
+<li><b>Doença grave com tratamento eficaz</b> (benefício alto): o limiar cai; trata-se com menos certeza.</li>
+<li><b>Exame arriscado ou pouco acurado:</b> a faixa de testar encolhe e pode desaparecer.</li>
+<li>“Benefício” e “dano” precisam estar <b>na mesma moeda</b>: mortes, eventos graves, anos de vida ajustados por qualidade. Os valores do paciente entram aqui.</li></ul></div>
+<p class="src">Pauker SG, Kassirer JP. The threshold approach to clinical decision making. N Engl J Med 1980;302:1109–17.</p>`},
+roc:{t:"Curva ROC e ponto de corte",h:()=>`
+<p>Muitos exames dão um <b>número</b>, não um “positivo” ou “negativo”: glicemia, troponina, PSA, D-dímero. Para transformar o número em resultado, escolhe-se um <b>ponto de corte</b>. Sensibilidade e especificidade não são propriedades fixas do exame: dependem desse corte.</p>
+<h4>As duas curvas em sino</h4>
+<p>Os resultados dos sadios (cinza) e dos doentes (verde) formam duas distribuições que <b>se sobrepõem</b>. Tudo à direita do corte é “positivo”.</p>
+<ul><li>A área laranja são os <b>falsos positivos</b>: sadios com resultado acima do corte.</li><li>A área verde escura são os <b>falsos negativos</b>: doentes com resultado abaixo do corte.</li></ul>
+<p>Mova o corte para a esquerda e você pega mais doentes (↑ sensibilidade), mas acusa mais sadios (↓ especificidade). Para a direita, o contrário. Enquanto as curvas se sobrepuserem, <b>não há corte que zere os dois erros</b>.</p>
+<h4>A curva ROC</h4>
+<p>Cada ponto de corte possível gera um par (sensibilidade, especificidade). A curva ROC liga todos esses pares, com a sensibilidade no eixo vertical e a taxa de falsos positivos (1 − especificidade) no horizontal. O nome vem da teoria de detecção de sinais em radares (<i>receiver operating characteristic</i>).</p>
+<ul><li><b>Canto superior esquerdo:</b> o teste perfeito (100% de sensibilidade sem nenhum falso positivo).</li><li><b>Diagonal:</b> um teste que acerta tanto quanto o acaso.</li><li>Quanto mais a curva se aproxima do canto, melhor o teste discrimina.</li></ul>
+<h4>Área sob a curva (AUC)</h4>
+<p>É a probabilidade de, sorteando um doente e um sadio, o doente ter o resultado mais alterado. 0,5 é o acaso; 1,0 é a separação perfeita. Uma convenção comum: 0,7 a 0,8 aceitável, 0,8 a 0,9 bom, acima de 0,9 excelente. No exemplo didático (Se 90%, Esp 80%), a AUC é 0,93.</p>
+<h4>As LRs estão na curva</h4>
+<p>A <b>LR+</b> é a inclinação da linha verde tracejada, da origem até o ponto: Se ÷ (1 − Esp). A <b>LR−</b> é a inclinação da linha laranja, do ponto até o canto (1, 1). Quanto mais inclinada a primeira e mais deitada a segunda, mais o teste muda a probabilidade.</p>
+<h4>Qual corte escolher?</h4>
+<ul><li><b>Índice de Youden</b> (Se + Esp − 1): o corte que maximiza os dois juntos, marcado com um círculo vazio. Ele é a distância vertical entre o ponto e a diagonal. Assume que um falso positivo e um falso negativo têm o mesmo custo, o que raramente é verdade.</li>
+<li><b>Priorizar sensibilidade</b> quando deixar passar a doença é grave e o teste positivo leva a outro exame: um teste muito sensível, se negativo, ajuda a descartar (<i>SnNout</i>).</li>
+<li><b>Priorizar especificidade</b> quando um falso positivo leva a um tratamento arriscado: um teste muito específico, se positivo, ajuda a confirmar (<i>SpPin</i>).</li></ul>
+<div class="trap"><h4>Cuidados</h4><ul><li>Neste app, a curva é <b>teórica</b>: construída a partir de um único par Se/Esp, supondo distribuições normais de mesma variância (modelo binormal). Curvas reais vêm dos dados de estudos diagnósticos e costumam ser menos simétricas.</li><li>AUC alta não garante utilidade clínica. Ela resume todos os cortes, inclusive os que ninguém usa, e não diz nada sobre a pré-teste do seu paciente.</li><li>Sensibilidade e especificidade variam com o espectro da doença: casos graves são mais fáceis de detectar que casos iniciais.</li></ul></div>
+<p class="src">Hanley JA, McNeil BJ. The meaning and use of the area under a ROC curve. Radiology 1982. · Altman DG, Bland JM. Diagnostic tests 3: receiver operating characteristic plots. BMJ 1994. · Youden WJ. Cancer 1950.</p>`},
+nntcurve:{t:"NNT conforme o risco basal",h:()=>`
+<p>O gráfico mostra o NNT (eixo vertical) de <b>todos os pacientes possíveis</b>, do risco basal mais baixo ao mais alto (eixo horizontal), mantendo o mesmo efeito relativo do tratamento.</p>
+<h4>Como ler</h4>
+<ul>
+<li>Os dois eixos estão em <b>escala logarítmica</b>: cada linha de grade é dez vezes a anterior.</li>
+<li><b>Linha verde:</b> o NNT para cada risco basal. Com RRR constante, ela é uma reta descendente: <b>dobrar o risco basal corta o NNT pela metade</b>.</li>
+<li><b>Ponto verde:</b> o seu paciente. Pontos vazios são pacientes fixados.</li>
+</ul>
+<h4>A linha vermelha: quando o dano vence</h4>
+<p>Ative “Considerar um dano do tratamento” e informe quanto o tratamento aumenta o risco de um efeito adverso (por exemplo, sangramento) no mesmo período. A linha vermelha é o <b>NNH</b>, o número necessário para causar um dano.</p>
+<div class="f">NNH = 1 ÷ aumento absoluto do risco de dano<br>risco basal de equilíbrio = aumento do dano × peso ÷ RRR</div>
+<p>À esquerda do ponto de equilíbrio (área sombreada), o NNT é maior que o NNH: é preciso tratar mais gente para beneficiar um do que para prejudicar um. Nesse trecho, o tratamento faz mais mal do que bem.</p>
+<h4>O peso do dano</h4>
+<p>Nem todo dano é tão grave quanto o desfecho evitado. Se o paciente considera um sangramento duas vezes pior que um AVC, use peso 2; se considera metade tão ruim, use 0,5. É uma forma simples de incluir os <b>valores do paciente</b> na decisão.</p>
+<h4>Exemplo</h4>
+<p>RRR 25% e sangramento aumentado em 1 ponto percentual, com peso 1: equilíbrio em 1% ÷ 25% = <b>4%</b>. Pacientes com risco basal abaixo de 4% teriam mais dano que benefício.</p>
+<div class="trap"><h4>Se o efeito vier como OR</h4><p>Escolha “OR” no tipo de efeito. Com OR constante, a RRR muda com o risco basal, e a linha deixa de ser reta: a OR exagera o efeito quando o desfecho é frequente.</p></div>
+<p class="src">Straus SE et al. Evidence-Based Medicine: How to Practice and Teach EBM. Elsevier, 2018. · Chatellier G et al. BMJ 1996.</p>`},
+};
+function openSheet(title,html){
+  const root=$("sheetRoot");const last=document.activeElement;
+  root.innerHTML=`<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true" aria-label="${title}"><div class="grab"></div><div class="sheet-h"><h3>${title}</h3><button class="x" id="sheetX" aria-label="Fechar">×</button></div><div class="learn">${html}</div></div></div>`;
+  document.body.style.overflow="hidden";
+  const close=()=>{root.innerHTML="";document.body.style.overflow="";document.removeEventListener("keydown",k);last&&last.focus&&last.focus();};
+  const k=e=>{if(e.key==="Escape")close();};document.addEventListener("keydown",k);
+  $("sheetX").onclick=close;$("scrim").addEventListener("click",e=>{if(e.target.id==="scrim")close();});$("sheetX").focus();
+  return close;
+}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-learn]");if(!b)return;const L=LEARN[b.dataset.learn];openSheet(L.t,L.h());});
+
+/* ================= como usar ================= */
+function openHow(){closeIntro();const L=LEARN.howto;openSheet(L.t,L.h());}
+function closeIntro(){$("introBanner").hidden=true;try{localStorage.setItem("nomoIntroSeen","1")}catch(e){}}
+$("howBtn").onclick=openHow;$("introOpen").onclick=openHow;$("introClose").onclick=closeIntro;
+try{if(!localStorage.getItem("nomoIntroSeen"))$("introBanner").hidden=false;}catch(e){$("introBanner").hidden=false;}
+
+/* ================= atalho ================= */
+function platform(){const u=navigator.userAgent||"";if(/iPhone|iPad|iPod/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1))return"ios";if(/Android/.test(u))return"android";return"desktop";}
+const SC={
+  ios:`<ol class="steps-l"><li><span>Abra esta página no <b>Safari</b>.</span></li><li><span>Toque no botão <b>Compartilhar</b> <kbd>⬆︎</kbd>, na barra inferior (ou superior, no iPad).</span></li><li><span>Role e toque em <b>Adicionar à Tela de Início</b>.</span></li><li><span>Confirme o nome, por exemplo “Nomo LAB”, e toque em <b>Adicionar</b>.</span></li></ol>`,
+  android:`<ol class="steps-l"><li><span>Abra esta página no <b>Chrome</b>.</span></li><li><span>Toque no menu <kbd>⋮</kbd>, no canto superior direito.</span></li><li><span>Toque em <b>Adicionar à tela inicial</b>.</span></li><li><span>Confirme o nome e toque em <b>Adicionar</b>. O ícone aparece junto dos seus apps.</span></li></ol>`,
+  desktop:`<ol class="steps-l"><li><span><b>Chrome ou Edge:</b> abra o menu <kbd>⋮</kbd> → <b>Transmitir, salvar e compartilhar</b> → <b>Criar atalho</b>. Marque “Abrir como janela” se quiser que ele pareça um app.</span></li><li><span><b>Safari (Mac):</b> menu <b>Arquivo</b> → <b>Adicionar ao Dock</b>.</span></li><li><span><b>Qualquer navegador:</b> salve nos favoritos com <kbd>Ctrl</kbd>+<kbd>D</kbd> (ou <kbd>⌘</kbd>+<kbd>D</kbd> no Mac).</span></li></ol>`,
+};
+let deferredInstall=null;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e;});
+window.addEventListener("appinstalled",()=>{deferredInstall=null;toast("Nomo LAB instalado");});
+$("shortcutBtn").onclick=async()=>{
+  if(deferredInstall){try{deferredInstall.prompt();const r=await deferredInstall.userChoice;deferredInstall=null;if(r&&r.outcome==="accepted")return;}catch(e){}}
+  (()=>{
+  const p=platform();
+  openSheet("Instalar o Nomo LAB",`<p>O Nomo LAB pode ser instalado como um aplicativo: fica na tela inicial, abre em tela cheia e funciona sem internet.</p>
+  <div class="seg plat" id="platSeg"><button data-p="ios">iPhone e iPad</button><button data-p="android">Android</button><button data-p="desktop">Computador</button></div>
+  <div id="platBody"></div><p style="font-size:13px;color:var(--muted)">Depois de instalado, o Nomo LAB funciona mesmo sem internet.</p>`);
+  const set=k=>{$("platBody").innerHTML=SC[k];document.querySelectorAll("#platSeg button").forEach(b=>b.classList.toggle("on",b.dataset.p===k));};
+  $("platSeg").onclick=e=>{const b=e.target.closest("button");if(b)set(b.dataset.p);};set(p);
+  })();
+};
+function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),1600);}
+
+/* ================= abas e redimensionamento ================= */
+function go(tab){S.tab=tab;["dx","tx"].forEach(k=>$("v-"+k).hidden=k!==tab);
+  document.querySelectorAll("#tabs button").forEach(b=>{b.classList.toggle("on",b.dataset.tab===tab);b.setAttribute("aria-selected",b.dataset.tab===tab);});
+  relayout();try{history.replaceState(null,"","#"+tab)}catch(e){}}
+$("tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b)go(b.dataset.tab);});
+function relayout(){const w=($(S.tab==="dx"?"faganWrap":"chatWrap").clientWidth)||window.innerWidth;const n=w<520;if(n!==LY.narrow){LY=layout(n);}S.tab==="dx"?renderDx():renderTx();}
+let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(relayout,120);});
+LY=layout(window.innerWidth<560);
+go((location.hash||"").slice(1)==="tx"?"tx":"dx");
+requestAnimationFrame(relayout);
+</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}</script>
+</body>
+</html>
