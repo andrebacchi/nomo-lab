@@ -318,6 +318,7 @@ svg.chart .bandP{fill:var(--accent);opacity:.15} svg.chart .bandN{fill:var(--alt
 .learn .steps-l{counter-reset:s;list-style:none;padding:0;margin:8px 0 12px}
 .steps-l li{counter-increment:s;display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;align-items:start;padding-block:8px;border-bottom:1px solid var(--line)}
 .steps-l li::before{content:counter(s);width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600}
+.fora{background:var(--accent-soft);border-radius:10px;padding:10px 12px;font-size:14px}
 kbd{font-family:var(--f-body);font-size:13px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;background:var(--sunk);white-space:nowrap}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--on-ink);padding:10px 16px;border-radius:999px;font-size:13.5px;z-index:30}
 </style>
@@ -1682,14 +1683,30 @@ const SC={
   android:`<ol class="steps-l"><li><span>Abra esta página no <b>Chrome</b>.</span></li><li><span>Toque no menu <kbd>⋮</kbd>, no canto superior direito.</span></li><li><span>Toque em <b>Adicionar à tela inicial</b>.</span></li><li><span>Confirme o nome e toque em <b>Adicionar</b>. O ícone aparece junto dos seus apps.</span></li></ol>`,
   desktop:`<ol class="steps-l"><li><span><b>Chrome ou Edge:</b> abra o menu <kbd>⋮</kbd> → <b>Transmitir, salvar e compartilhar</b> → <b>Criar atalho</b>. Marque “Abrir como janela” se quiser que ele pareça um app.</span></li><li><span><b>Safari (Mac):</b> menu <b>Arquivo</b> → <b>Adicionar ao Dock</b>.</span></li><li><span><b>Qualquer navegador:</b> salve nos favoritos com <kbd>Ctrl</kbd>+<kbd>D</kbd> (ou <kbd>⌘</kbd>+<kbd>D</kbd> no Mac).</span></li></ol>`,
 };
+/* Janela em que o app está rodando: "navegador" (aba comum), "propria" (instalado, na janela dele) ou "outra"
+   (aberto dentro de outro app instalado, como o BACCHI LAB). Neste último caso o Android também responde
+   display-mode: standalone, e o botão Instalar sumia para quem ainda não tinha o app: a diferença é de onde a página veio. */
+function janelaApp(k){
+  if(!(matchMedia("(display-mode: standalone)").matches||navigator.standalone===true))return"navegador";
+  let fora=false,marca=false;
+  try{const r=document.referrer&&new URL(document.referrer);fora=!!r&&r.origin===location.origin&&!r.pathname.startsWith(new URL("./",location.href).pathname);}catch(e){}
+  try{if(!document.referrer)localStorage.setItem(k,"1");if(!fora)sessionStorage.setItem(k,"1");marca=localStorage.getItem(k)==="1"||sessionStorage.getItem(k)==="1";}catch(e){}
+  return !fora||marca?"propria":"outra";
+}
+/* Confirmação do próprio navegador, quando ele sabe responder (Chrome no Android, pelo related_applications do manifest). */
+function appInstalado(k){
+  if(!navigator.getInstalledRelatedApps)return Promise.resolve(false);
+  return navigator.getInstalledRelatedApps().then(l=>{if(l.length){try{localStorage.setItem(k,"1");}catch(e){}}return l.length>0;}).catch(()=>false);
+}
+const JAN_K="nomo-lab.instalado";let janela=janelaApp(JAN_K);if(janela==="outra")appInstalado(JAN_K).then(ok=>{if(ok)janela="propria";});
 let deferredInstall=null;
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e;});
-window.addEventListener("appinstalled",()=>{deferredInstall=null;toast("Nomo LAB instalado");});
+window.addEventListener("appinstalled",()=>{deferredInstall=null;try{localStorage.setItem(JAN_K,"1");}catch(e){}toast("Nomo LAB instalado");});
 $("shortcutBtn").onclick=async()=>{
   if(deferredInstall){try{deferredInstall.prompt();const r=await deferredInstall.userChoice;deferredInstall=null;if(r&&r.outcome==="accepted")return;}catch(e){}}
   (()=>{
   const p=platform();
-  openSheet("Instalar o Nomo LAB",`<p>O Nomo LAB pode ser instalado como um aplicativo: fica na tela inicial, abre em tela cheia e funciona sem internet.</p>
+  openSheet("Instalar o Nomo LAB",`${janela==="outra"?`<p class="fora">Você abriu este app por dentro de outro, como o BACCHI LAB, e daqui não dá para instalar. Toque em <kbd>⋮</kbd> no alto da tela e em <b>Abrir no Chrome</b>; lá, toque de novo em <b>Instalar</b>.</p>`:""}<p>O Nomo LAB pode ser instalado como um aplicativo: fica na tela inicial, abre em tela cheia e funciona sem internet.</p>
   <div class="seg plat" id="platSeg"><button data-p="ios">iPhone e iPad</button><button data-p="android">Android</button><button data-p="desktop">Computador</button></div>
   <div id="platBody"></div><p style="font-size:13px;color:var(--muted)">Depois de instalado, o Nomo LAB funciona mesmo sem internet.</p>`);
   const set=k=>{$("platBody").innerHTML=SC[k];document.querySelectorAll("#platSeg button").forEach(b=>b.classList.toggle("on",b.dataset.p===k));};
