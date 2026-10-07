@@ -19,6 +19,14 @@
 body{margin:0;font-size:14px}
 img{max-width:100%}
 [hidden]{display:none!important}
+/* QR code do app (padrão do BACCHI LAB): grande e sobre branco, para ler de longe quando projetado */
+.qr-wrap{display:grid;gap:12px;justify-items:center;text-align:center;padding-top:14px}
+.qr-wrap p{margin:0}
+.qr-box{width:min(100%,56vh);padding:10px;border-radius:10px;background:#fff;border:1px solid var(--line)}
+.qr-box svg{display:block;width:100%;height:auto}
+.qr-url{font:600 clamp(15px,4vw,20px)/1.3 "IBM Plex Mono",ui-monospace,monospace;overflow-wrap:anywhere;-webkit-user-select:all;user-select:all}
+.qr-acts{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.qr-nota{font-size:12.5px;opacity:.7}
 </style>
 </head>
 <body>
@@ -328,6 +336,7 @@ kbd{font-family:var(--f-body);font-size:13px;border:1px solid var(--line);border
   <div class="brand"><a class="hub" href="https://andrebacchi.github.io/bacchilab/">‹ BACCHI LAB</a><h1>Nomo <em>LAB</em></h1><p>Criado por André D. Bacchi</p></div>
   <div class="top-actions">
     <button class="btn primary" id="howBtn"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 4c-1.5-1-3.5-1.3-6-1v10c2.5-.3 4.5 0 6 1 1.5-1 3.5-1.3 6-1V3c-2.5-.3-4.5 0-6 1zM8 4v10"/></svg><span class="lg">Como usar este aplicativo</span><span class="sm">Como usar</span></button>
+    <button class="btn" id="qrBtn" aria-label="Mostrar o QR code deste app"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="2" y="2" width="4.5" height="4.5" rx=".8"/><rect x="9.5" y="2" width="4.5" height="4.5" rx=".8"/><rect x="2" y="9.5" width="4.5" height="4.5" rx=".8"/><path d="M9.5 9.5h2v2h-2zM12.5 12.5H14V14h-1.5z" fill="currentColor" stroke="none"/></svg>QR code</button>
     <button class="btn" id="shortcutBtn" aria-label="Adicionar atalho à tela inicial">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3.5" y="1.5" width="9" height="13" rx="2"/><path d="M8 5.5v5M5.5 8h5"/></svg>
       <span class="lg">Instalar app</span><span class="sm">Instalar</span>
@@ -1702,6 +1711,19 @@ const JAN_K="nomo-lab.instalado";let janela=janelaApp(JAN_K);if(janela==="outra"
 let deferredInstall=null;
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e;});
 window.addEventListener("appinstalled",()=>{deferredInstall=null;try{localStorage.setItem(JAN_K,"1");}catch(e){}toast("Nomo LAB instalado");});
+/* QR code do app (padrão do BACCHI LAB). O desenho é fixo: aponta para o endereço do app no ar.
+   Foi gerado com o qrcode.js do repositório bacchilab (nível M); se o endereço mudar, gere de novo. */
+const QR_URL="https://andrebacchi.github.io/nomo-lab/",QR_SVG="<svg viewBox=\"0 0 33 33\" shape-rendering=\"crispEdges\" role=\"img\" aria-label=\"QR code para andrebacchi.github.io/nomo-lab\"><rect width=\"33\" height=\"33\" fill=\"#fff\"/><path d=\"M2 2h7v1h-7zM10 2h1v1h-1zM12 2h3v1h-3zM18 2h1v1h-1zM21 2h2v1h-2zM24 2h7v1h-7zM2 3h1v1h-1zM8 3h1v1h-1zM10 3h3v1h-3zM16 3h1v1h-1zM19 3h2v1h-2zM24 3h1v1h-1zM30 3h1v1h-1zM2 4h1v1h-1zM4 4h3v1h-3zM8 4h1v1h-1zM12 4h1v1h-1zM14 4h3v1h-3zM21 4h1v1h-1zM24 4h1v1h-1zM26 4h3v1h-3zM30 4h1v1h-1zM2 5h1v1h-1zM4 5h3v1h-3zM8 5h1v1h-1zM10 5h1v1h-1zM13 5h4v1h-4zM19 5h1v1h-1zM21 5h1v1h-1zM24 5h1v1h-1zM26 5h3v1h-3zM30 5h1v1h-1zM2 6h1v1h-1zM4 6h3v1h-3zM8 6h1v1h-1zM11 6h1v1h-1zM16 6h3v1h-3zM21 6h1v1h-1zM24 6h1v1h-1zM26 6h3v1h-3zM30 6h1v1h-1zM2 7h1v1h-1zM8 7h1v1h-1zM12 7h3v1h-3zM21 7h2v1h-2zM24 7h1v1h-1zM30 7h1v1h-1zM2 8h7v1h-7zM10 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM24 8h7v1h-7zM10 9h2v1h-2zM16 9h1v1h-1zM18 9h2v1h-2zM21 9h1v1h-1zM2 10h1v1h-1zM4 10h2v1h-2zM7 10h3v1h-3zM13 10h2v1h-2zM17 10h5v1h-5zM24 10h1v1h-1zM27 10h1v1h-1zM29 10h2v1h-2zM3 11h1v1h-1zM9 11h1v1h-1zM11 11h3v1h-3zM15 11h1v1h-1zM21 11h6v1h-6zM30 11h1v1h-1zM3 12h2v1h-2zM7 12h9v1h-9zM18 12h3v1h-3zM22 12h2v1h-2zM25 12h2v1h-2zM28 12h2v1h-2zM3 13h1v1h-1zM5 13h3v1h-3zM12 13h2v1h-2zM15 13h3v1h-3zM20 13h1v1h-1zM22 13h3v1h-3zM30 13h1v1h-1zM3 14h2v1h-2zM6 14h5v1h-5zM19 14h1v1h-1zM21 14h1v1h-1zM25 14h1v1h-1zM27 14h2v1h-2zM4 15h2v1h-2zM10 15h1v1h-1zM12 15h1v1h-1zM15 15h5v1h-5zM21 15h2v1h-2zM24 15h1v1h-1zM28 15h3v1h-3zM4 16h1v1h-1zM7 16h2v1h-2zM10 16h1v1h-1zM13 16h2v1h-2zM16 16h1v1h-1zM19 16h1v1h-1zM21 16h2v1h-2zM24 16h1v1h-1zM28 16h3v1h-3zM2 17h1v1h-1zM4 17h1v1h-1zM6 17h2v1h-2zM13 17h1v1h-1zM15 17h1v1h-1zM17 17h2v1h-2zM20 17h1v1h-1zM23 17h4v1h-4zM29 17h1v1h-1zM4 18h2v1h-2zM7 18h2v1h-2zM12 18h2v1h-2zM17 18h1v1h-1zM21 18h3v1h-3zM25 18h3v1h-3zM29 18h1v1h-1zM5 19h1v1h-1zM7 19h1v1h-1zM13 19h1v1h-1zM15 19h1v1h-1zM17 19h1v1h-1zM19 19h1v1h-1zM22 19h1v1h-1zM25 19h1v1h-1zM27 19h3v1h-3zM2 20h1v1h-1zM6 20h4v1h-4zM11 20h4v1h-4zM17 20h3v1h-3zM23 20h1v1h-1zM28 20h1v1h-1zM4 21h1v1h-1zM7 21h1v1h-1zM9 21h1v1h-1zM14 21h1v1h-1zM17 21h3v1h-3zM22 21h2v1h-2zM26 21h1v1h-1zM28 21h1v1h-1zM3 22h1v1h-1zM6 22h1v1h-1zM8 22h1v1h-1zM10 22h1v1h-1zM12 22h1v1h-1zM14 22h2v1h-2zM17 22h4v1h-4zM22 22h7v1h-7zM10 23h2v1h-2zM14 23h3v1h-3zM18 23h3v1h-3zM22 23h1v1h-1zM26 23h5v1h-5zM2 24h7v1h-7zM10 24h1v1h-1zM13 24h1v1h-1zM15 24h1v1h-1zM19 24h1v1h-1zM21 24h2v1h-2zM24 24h1v1h-1zM26 24h2v1h-2zM29 24h1v1h-1zM2 25h1v1h-1zM8 25h1v1h-1zM10 25h3v1h-3zM17 25h1v1h-1zM20 25h1v1h-1zM22 25h1v1h-1zM26 25h2v1h-2zM29 25h1v1h-1zM2 26h1v1h-1zM4 26h3v1h-3zM8 26h1v1h-1zM13 26h1v1h-1zM16 26h1v1h-1zM19 26h1v1h-1zM22 26h5v1h-5zM28 26h1v1h-1zM2 27h1v1h-1zM4 27h3v1h-3zM8 27h1v1h-1zM10 27h2v1h-2zM15 27h4v1h-4zM21 27h1v1h-1zM23 27h1v1h-1zM25 27h3v1h-3zM30 27h1v1h-1zM2 28h1v1h-1zM4 28h3v1h-3zM8 28h1v1h-1zM10 28h1v1h-1zM13 28h2v1h-2zM16 28h1v1h-1zM19 28h3v1h-3zM25 28h1v1h-1zM28 28h1v1h-1zM30 28h1v1h-1zM2 29h1v1h-1zM8 29h1v1h-1zM11 29h3v1h-3zM15 29h1v1h-1zM18 29h1v1h-1zM22 29h2v1h-2zM25 29h3v1h-3zM29 29h1v1h-1zM2 30h7v1h-7zM10 30h1v1h-1zM12 30h1v1h-1zM15 30h3v1h-3zM21 30h5v1h-5zM29 30h1v1h-1z\" fill=\"#161a22\"/></svg>";
+function showQR(){
+  openSheet("QR code do Nomo LAB",`<div class="qr-wrap"><p>Aponte a câmera do celular para o código.</p><div class="qr-box">${QR_SVG}</div><p class="qr-url" id="qrUrl">andrebacchi.github.io/nomo-lab</p><div class="qr-acts"><button class="btn primary" id="qrCopy">Copiar link</button>${navigator.share?'<button class="btn" id="qrShare">Compartilhar</button>':''}</div><p class="qr-nota">QR Code é marca registrada da DENSO WAVE INCORPORATED.</p></div>`);
+  const g=id=>document.getElementById(id);
+  g("qrCopy").onclick=async e=>{const b=e.currentTarget;
+    try{await navigator.clipboard.writeText(QR_URL);b.textContent="Link copiado";}
+    catch(_){const r=document.createRange();r.selectNodeContents(g("qrUrl"));const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent="Selecionado: copie";}
+    setTimeout(()=>{if(b.isConnected)b.textContent="Copiar link";},2200);};
+  if(g("qrShare"))g("qrShare").onclick=()=>navigator.share({title:"Nomo LAB",url:QR_URL}).catch(()=>{});
+}
+document.getElementById("qrBtn").onclick=showQR;
 $("shortcutBtn").onclick=async()=>{
   if(deferredInstall){try{deferredInstall.prompt();const r=await deferredInstall.userChoice;deferredInstall=null;if(r&&r.outcome==="accepted")return;}catch(e){}}
   (()=>{
