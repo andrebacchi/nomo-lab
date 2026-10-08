@@ -247,6 +247,7 @@ details.name-case summary small{font-weight:400;color:var(--accent);margin-left:
 @media (max-width:520px){header.top{flex-wrap:wrap}.top-actions{width:100%;justify-content:stretch}.top-actions .btn{flex:1;justify-content:center}}
 .intro-banner{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--accent-soft);border-radius:12px;padding:10px 14px;margin-top:12px}
 .intro-banner p{margin:0;font-size:14px}
+.xlink{color:var(--accent);font-weight:600}
 .vcard{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;padding:12px 16px}
 .vcard .verdict{flex:1 1 240px;min-width:0}
 .vcard .more-btn{margin-left:auto}
@@ -353,7 +354,7 @@ kbd{font-family:var(--f-body);font-size:13px;border:1px solid var(--line);border
 <section id="v-dx">
   <div class="intro">
     <h2>Da suspeita à probabilidade: <i>odds pré-teste × LR = odds pós-teste</i></h2>
-    <p>Digite a probabilidade pré-teste e o desempenho do teste, ou toque nas escalas do nomograma e arraste.</p>
+    <p>Digite a probabilidade pré-teste e o desempenho do teste, ou toque nas escalas do nomograma e arraste. Tem a tabela 2×2 de um estudo de acurácia? Monte-a no <a class="xlink" href="https://andrebacchi.github.io/2-2-lab/" target="_blank" rel="noopener">2×2 LAB</a> e traga os números para cá.</p>
   </div>
   <div class="presets" id="dxPresets"><span class="lbl">Exemplos</span></div>
 
@@ -488,7 +489,7 @@ kbd{font-family:var(--f-body);font-size:13px;border:1px solid var(--line);border
 <section id="v-tx" hidden>
   <div class="intro">
     <h2>O mesmo tratamento, benefícios diferentes: <i>NNT = 1 / (risco basal × RRR)</i></h2>
-    <p>Digite o risco basal do paciente e o efeito do tratamento, ou toque nas escalas do nomograma e arraste.</p>
+    <p>Digite o risco basal do paciente e o efeito do tratamento, ou toque nas escalas do nomograma e arraste. De onde vêm RRR, RAR e NNT? Veja no <a class="xlink" href="https://andrebacchi.github.io/study-lab/#medidas" target="_blank" rel="noopener">STUDY LAB</a>.</p>
   </div>
   <div class="presets" id="txPresets"><span class="lbl">Exemplos</span></div>
 
@@ -1745,7 +1746,35 @@ $("tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b)g
 function relayout(){const w=($(S.tab==="dx"?"faganWrap":"chatWrap").clientWidth)||window.innerWidth;const n=w<520;if(n!==LY.narrow){LY=layout(n);}S.tab==="dx"?renderDx():renderTx();}
 let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(relayout,120);});
 LY=layout(window.innerWidth<560);
-go((location.hash||"").slice(1)==="tx"?"tx":"dx");
+/* ================= números vindos de outros apps da família BACCHI LAB ================= */
+/* Regra da família: números no endereço (?se=0.85&sp=0.9), tela depois do # (#dx ou #tx) e a origem em "de".
+   Diagnóstico: se, sp, pre (proporções 0–1), nd e nh (doentes e sadios, usados no modo incerteza), ts e dz (nomes).
+   Tratamento: cer e eer (eventos no controle e no tratado, 0–1), pc (risco basal; se faltar, usa o cer), iv, oc e pr (nomes).
+   Depois de lidos, os números saem do endereço: recarregar ou compartilhar a página não reabre a mesma situação. */
+const ORIGEM={"2-2-lab":"2×2 LAB","study-lab":"STUDY LAB"};
+function fromLink(){let q;try{q=new URLSearchParams(location.search);}catch(e){return null;}
+  if(!q.toString())return null;
+  const num=k=>{const v=q.get(k);if(v==null||!/^\d*\.?\d+$/.test(v))return null;const x=parseFloat(v);return isFinite(x)?x:null;},
+        frac=k=>{const x=num(k);return has(x)&&x>0&&x<1?x:null;},
+        cnt=k=>{const v=q.get(k);return v&&/^\d{1,7}$/.test(v)&&+v>0?+v:null;},
+        txt=k=>(q.get(k)||"").replace(/[<>"&]/g,"").trim().slice(0,40);
+  const de=ORIGEM[q.get("de")]?q.get("de"):null;let out=null;
+  const se=frac("se"),sp=frac("sp"),cer=frac("cer"),eer=num("eer");
+  if(se!=null&&sp!=null){const d=S.dx;Object.assign(d,{pre:frac("pre"),se,sp,chain:[],pins:[]});fromSeSp();clearUncDx();d.nD=cnt("nd");d.nH=cnt("nh");
+    if(txt("ts"))S.names.ts=txt("ts");if(txt("dz"))S.names.dz=txt("dz");out={tab:"dx",de};}
+  else if(cer!=null&&has(eer)&&eer>=0&&eer<1){const t=S.tx;Object.assign(t,{pins:[],mode:"trial",cer,eer,pc:frac("pc")??cer,harm:false});clearUncTx();
+    ["iv","oc","pr"].forEach(k=>{if(txt(k))S.names[k]=txt(k);});out={tab:"tx",de};}
+  try{history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
+  return out;}
+function linkBanner(L){if(!L)return;const d=S.dx,t=S.tx,src=L.de?`do ${ORIGEM[L.de]}`:"de outro aplicativo";
+  const msg=L.tab==="dx"?`<b>Recebido ${src}:</b> sensibilidade ${pcx(d.se)} e especificidade ${pcx(d.sp)}${has(d.nD)&&has(d.nH)?`, com ${fmt(d.nD,0)} doentes e ${fmt(d.nH,0)} sadios (usados no modo incerteza)`:""}. ${has(d.pre)?`A pré-teste começou em ${pcx(d.pre)}, a mesma de lá: troque pela suspeita do seu paciente.`:"Agora informe a pré-teste do seu paciente."}`
+    :`<b>Recebido ${src}:</b> ${pcx(t.cer)} de eventos no controle e ${pcx(t.eer)} no tratado. O risco basal começou igual ao do controle: mude para o risco do seu paciente e veja o NNT mudar.`;
+  const b=document.createElement("div");b.className="intro-banner";b.id="linkBanner";b.setAttribute("role","status");
+  b.innerHTML=`<p>${msg}</p><div class="row"><button class="chip clear" id="linkClose">Entendi</button></div>`;
+  const sec=$("v-"+L.tab);sec.insertBefore(b,sec.querySelector(".presets"));$("linkClose").onclick=()=>b.remove();}
+const LINK=fromLink();
+go(LINK?LINK.tab:(location.hash||"").slice(1)==="tx"?"tx":"dx");
+linkBanner(LINK);
 requestAnimationFrame(relayout);
 </script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}</script>
