@@ -16,7 +16,7 @@ O Nomo LAB transforma números de estudos em decisões sobre um paciente:
 ## Recursos
 
 - Nomogramas arrastáveis, que funcionam no computador e no celular
-- Frequências naturais (1.000 pacientes), curva pré × pós-teste e curva ROC com ponto de corte ajustável
+- Frequências naturais em árvore e em matriz de 1.000 pacientes, curva pré × pós-teste e curva ROC com ponto de corte ajustável
 - Limiares de decisão calculados (Pauker e Kassirer)
 - Modo incerteza: faixas e intervalos de confiança, inclusive no nomograma
 - Modo desafio: estimar antes de ver, com retorno sobre o tipo de erro

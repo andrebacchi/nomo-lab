@@ -199,6 +199,17 @@ svg.dots{width:100%;height:auto;display:block}
 .legend i{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
 .sentence{margin:10px 0 0;font-size:14px;max-width:64ch}
 .sentence b{font-variant-numeric:tabular-nums}
+/* árvore de frequências naturais: em pé no celular, deitada quando o cartão é largo */
+svg.tree{width:100%;height:auto;display:block;max-width:520px;margin-inline:auto}
+svg.tree.h{max-width:none}
+svg.tree .bx{fill:var(--surface);stroke:var(--line);stroke-width:1.2}
+svg.tree .bx.r,svg.tree .bx.o{fill:var(--sunk);stroke:none}
+svg.tree .lk{fill:none;stroke:var(--tick);opacity:.4;stroke-linecap:round}
+svg.tree .rg{fill:none;stroke-width:2.2;stroke-linecap:round}
+svg.tree text{font-size:11.5px;text-anchor:middle}
+svg.tree .n{fill:var(--fg);font-weight:600;font-size:18px;font-variant-numeric:tabular-nums}
+svg.tree .k{fill:var(--fg);font-weight:600;font-size:13px;font-variant-numeric:tabular-nums}
+svg.tree .bl{fill:var(--fg);font-size:11px;font-variant-numeric:tabular-nums;paint-order:stroke;stroke:var(--surface);stroke-width:5px;stroke-linejoin:round}
 .empty-note{margin:10px 0 0;font-size:13.5px;color:var(--muted);background:var(--sunk);border-radius:8px;padding:10px 12px}
 svg.chart{width:100%;height:auto;display:block;overflow:visible}
 svg.chart .g{stroke:var(--line)} svg.chart .a{stroke:var(--tick)}
@@ -453,6 +464,12 @@ kbd{font-family:var(--f-body);font-size:13px;border:1px solid var(--line);border
   </div>
 
   <div class="figs">
+    <div class="card wide maskable" id="dxTreeCard">
+      <div class="card-h"><h3>Árvore de frequências naturais</h3><button class="more-btn" data-learn="dxtree"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button></div>
+      <p class="lede">A conta do nomograma em etapas: quem tem a doença, como o teste responde e, reagrupando pelo resultado, quantos positivos são verdadeiros.</p>
+      <svg class="tree" id="dxTree" viewBox="-2 -2 324 384" role="img" aria-label="Árvore de frequências naturais"></svg>
+      <p class="empty-note" id="dxTreeNote" hidden>Informe pré-teste, sensibilidade e especificidade (ou as duas LRs) para preencher a árvore.</p>
+    </div>
     <div class="card maskable" id="dxDotsCard">
       <div class="card-h"><h3>1.000 pacientes como este</h3><button class="more-btn" data-learn="dxdots"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 4.9v.1" stroke-linecap="round"/></svg>Saiba mais</button></div>
       <p class="lede" id="dotsLede">Frequências naturais: a mesma conta de Bayes, contada em pessoas.</p>
@@ -901,7 +918,7 @@ function renderDx(fromDrag){
   const h=$("dxHint");h.classList.remove("warn");
   if(has(d.se)&&has(d.sp)&&d.se+d.sp<=1){h.textContent="Com Se + Esp ≤ 100%, o teste não separa doentes de sadios: um positivo não aumenta a suspeita.";h.classList.add("warn");}
   else if(has(d.lrp)&&has(d.lrn)&&has(d.se))h.textContent=`LR+ = Se ÷ (1 − Esp) = ${lr(d.lrp)}   ·   LR− = (1 − Se) ÷ Esp = ${lr(d.lrn)}`;
-  else if((has(d.lrp)||has(d.lrn))&&!has(d.se))h.textContent="Com só as LRs, a matriz de pacientes precisa das duas (LR+ > 1 e LR− < 1) para estimar Se e Esp.";
+  else if((has(d.lrp)||has(d.lrn))&&!has(d.se))h.textContent="Com só as LRs, a árvore e a matriz de pacientes precisam das duas (LR+ > 1 e LR− < 1) para estimar Se e Esp.";
   else h.textContent="";
   // cadeia
   const c=$("chain"),first=d.chain.length?d.chain[0].pre:d.pre;
@@ -912,8 +929,8 @@ function renderDx(fromDrag){
   document.querySelectorAll("#thrMode button").forEach(b=>b.classList.toggle("on",b.dataset.v===d.thrMode));
   $("thrCalc").hidden=d.thrMode!=="calc";$("thrManual").hidden=d.thrMode!=="manual";
   renderThrOut();renderUncDx();syncNames();
-  $("dxDotsCard").classList.toggle("masked",M&&has(pp));$("leafCard").classList.toggle("masked",M&&has(pp));
-  syncDx();drawDxDots();drawLeaf(pp,pn);renderDxChal(pp,pn);
+  $("dxTreeCard").classList.toggle("masked",M&&has(pp));$("dxDotsCard").classList.toggle("masked",M&&has(pp));$("leafCard").classList.toggle("masked",M&&has(pp));
+  syncDx();drawDxTree();drawDxDots();drawLeaf(pp,pn);renderDxChal(pp,pn);
   if(!CUTTING)S.dx.dp=has(d.se)&&has(d.sp)&&d.se+d.sp>1?PhiInv(d.se)+PhiInv(d.sp):null;
   drawROC();
 }
@@ -986,16 +1003,65 @@ function dotGrid(counts,cols,rows){
     s+=c.ring?`<circle cx="${x}" cy="${y}" r="${r-0.9}" fill="none" stroke="${c.col}" stroke-width="1.7"/>`:`<circle cx="${x}" cy="${y}" r="${r}" fill="${c.col}"/>`;}});
   return s;
 }
+/* Frequências naturais do diagnóstico: a mesma contagem alimenta a árvore e a matriz de pontos */
+function nfDx(){const d=S.dx;if(!(has(d.pre)&&has(d.se)&&has(d.sp)))return null;
+  const N=1000,D=Math.round(N*d.pre),TP=Math.round(D*d.se),FN=D-TP,H=N-D,FP=Math.round(H*(1-d.sp)),TN=H-FP;
+  return{N,D,H,TP,FN,FP,TN,pos:TP+FP,neg:FN+TN};}
+const pv=(a,b)=>!b?"—":a===b?"100%":pc(a/b);
+const pct1=p=>{const v=p*100;return v.toLocaleString("pt-BR",{maximumFractionDigits:v<1?2:1})+"%";};
+function drawDxTree(){
+  const d=S.dx,q=nfDx(),svg=$("dxTree"),wide=$("dxTreeCard").clientWidth>=860;
+  // caixas: [centro x, centro y, largura, altura]
+  const G=wide
+    ?{W:880,H:304,root:[70,152,140,60],dz:[[285,77,150,56],[285,227,150,56]],leaf:[[525,40,170,54],[525,114,170,54],[525,190,170,54],[525,264,170,54]],out:[[785,77,190,88],[785,227,190,88]]}
+    :{W:320,H:380,root:[160,25,176,50],dz:[[78,116,140,48],[242,116,140,48]],leaf:[[37,214,74,66],[119,214,74,66],[201,214,74,66],[283,214,74,66]],out:[[78,333,150,88],[242,333,150,88]]};
+  const n=v=>q?fmt(v,0):"?", sw=v=>q?(1.4+7*Math.sqrt(v/q.N)).toFixed(1):"2";
+  const port=(b,s)=>wide?[b[0]+s*b[2]/2,b[1]]:[b[0],b[1]+s*b[3]/2];
+  const path=(a,b)=>{const [x1,y1]=port(a,1),[x2,y2]=port(b,-1),mx=(x1+x2)/2,my=(y1+y2)/2;
+    return{d:wide?`M${x1},${y1}C${mx},${y1} ${mx},${y2} ${x2},${y2}`:`M${x1},${y1}C${x1},${my} ${x2},${my} ${x2},${y2}`,mx,my};};
+  let links="",labels="",boxes="";
+  // rótulo do ramo: sobre a linha na árvore deitada; ao lado da bifurcação na árvore em pé (side −1 à esquerda, +1 à direita)
+  const branch=(a,b,v,t,side)=>{const p=path(a,b);links+=`<path class="lk" d="${p.d}" stroke-width="${sw(v)}"/>`;
+    labels+=wide?`<text class="bl" x="${p.mx}" y="${p.my+4}">${t}</text>`:`<text class="bl" x="${a[0]+side*5}" y="${p.my+4}" style="text-anchor:${side<0?"end":"start"}">${t}</text>`;};
+  const pr=q?" "+pct1(d.pre):"",se=q?" "+pct1(d.se):"",sp=q?" "+pct1(d.sp):"";
+  branch(G.root,G.dz[0],q?q.D:0,"pré-teste"+pr,-1);
+  branch(G.root,G.dz[1],q?q.H:0,q?pct1(1-d.pre):"",1);
+  branch(G.dz[0],G.leaf[0],q?q.TP:0,"Se"+se,-1);
+  branch(G.dz[0],G.leaf[1],q?q.FN:0,q?(wide?"1 − Se ":"")+pct1(1-d.se):"",1);
+  branch(G.dz[1],G.leaf[2],q?q.FP:0,q?(wide?"1 − Esp ":"")+pct1(1-d.sp):"",-1);
+  branch(G.dz[1],G.leaf[3],q?q.TN:0,"Esp"+sp,1);
+  // reagrupamento pelo resultado do teste: positivos = VP + FP; negativos = FN + VN
+  const regroup=(a,b,col,dash)=>{links+=`<path class="rg" d="${path(a,b).d}" stroke="${col}"${dash?` stroke-dasharray="1 5"`:""}/>`;};
+  regroup(G.leaf[0],G.out[0],"var(--accent)");regroup(G.leaf[2],G.out[0],"var(--alt)");
+  regroup(G.leaf[1],G.out[1],"var(--accent)",true);regroup(G.leaf[3],G.out[1],"var(--tick)");
+  const rect=(b,c)=>`<rect class="bx${c?" "+c:""}" x="${b[0]-b[2]/2}" y="${b[1]-b[3]/2}" width="${b[2]}" height="${b[3]}" rx="10"/>`;
+  const two=(b,c,num,lab)=>{boxes+=rect(b,c)+`<text class="n" x="${b[0]}" y="${b[1]-2}">${num}</text><text x="${b[0]}" y="${b[1]+15}">${lab}</text>`;};
+  two(G.root,"r",n(q?q.N:0),"pacientes como este");
+  two(G.dz[0],"",n(q?q.D:0),"com doença");two(G.dz[1],"",n(q?q.H:0),"sem doença");
+  const leaf=(b,num,l1,l2,col,ring)=>{const w=String(num).length*10.4,cx=b[0]+7,y=wide?b[1]-3:b[1]-9;
+    boxes+=rect(b)+(ring?`<circle cx="${cx-w/2-9}" cy="${y-6}" r="4.2" fill="none" stroke="${col}" stroke-width="1.7"/>`:`<circle cx="${cx-w/2-9}" cy="${y-6}" r="5" fill="${col}"/>`)+`<text class="n" x="${cx}" y="${y}">${num}</text>`
+      +(wide?`<text x="${b[0]}" y="${b[1]+15}">${l1} ${l2}</text>`:`<text x="${b[0]}" y="${b[1]+9}">${l1}</text><text x="${b[0]}" y="${b[1]+22}">${l2}</text>`);};
+  leaf(G.leaf[0],n(q?q.TP:0),"verdadeiro","positivo","var(--accent)");
+  leaf(G.leaf[1],n(q?q.FN:0),"falso","negativo","var(--accent)",true);
+  leaf(G.leaf[2],n(q?q.FP:0),"falso","positivo","var(--alt)");
+  leaf(G.leaf[3],n(q?q.TN:0),"verdadeiro","negativo","var(--dot-off)");
+  const out=(b,tot,lab,part,partLab,k,val)=>{boxes+=rect(b,"o")+`<text class="n" x="${b[0]}" y="${b[1]-18}">${tot}</text><text x="${b[0]}" y="${b[1]-2}">${lab}</text><text x="${b[0]}" y="${b[1]+15}">${part} ${partLab}</text><text class="k" x="${b[0]}" y="${b[1]+33}">${k} ≈ ${val}</text>`;};
+  out(G.out[0],n(q?q.pos:0),"testes positivos",n(q?q.TP:0),"com doença","VPP",q?pv(q.TP,q.pos):"—");
+  out(G.out[1],n(q?q.neg:0),"testes negativos",n(q?q.TN:0),"sem doença","VPN",q?pv(q.TN,q.neg):"—");
+  svg.setAttribute("viewBox",`-2 -2 ${G.W+4} ${G.H+4}`);svg.classList.toggle("h",wide);svg.innerHTML=links+boxes+labels;
+  svg.setAttribute("aria-label",q?`Árvore de frequências naturais: de 1.000 pacientes, ${q.D} com doença e ${q.H} sem doença; ${q.TP} verdadeiros positivos, ${q.FN} falsos negativos, ${q.FP} falsos positivos e ${q.TN} verdadeiros negativos; ${q.pos} testes positivos e ${q.neg} negativos`:"Árvore de frequências naturais, ainda sem dados");
+  $("dxTreeNote").hidden=!!q;
+}
 function drawDxDots(){
   const d=S.dx;
   if(!(has(d.pre)&&has(d.se)&&has(d.sp))){$("dxDots").innerHTML=dotGrid([{n:1000,col:"var(--dot-off)"}],40,25);$("dxLegend").innerHTML="";
     $("dxSentence").innerHTML=`<span class="empty-note" style="display:block">Informe pré-teste, sensibilidade e especificidade (ou as duas LRs) para distribuir os 1.000 pacientes.</span>`;
     $("dotsLede").textContent="Frequências naturais: a mesma conta de Bayes, contada em pessoas.";return;}
-  const N=1000,D=Math.round(N*d.pre),TP=Math.round(D*d.se),FN=D-TP,H=N-D,FP=Math.round(H*(1-d.sp)),TN=H-FP;
+  const {TP,FN,FP,TN}=nfDx();
   $("dxDots").innerHTML=dotGrid([{n:TP,col:"var(--accent)"},{n:FN,col:"var(--accent)",ring:true},{n:FP,col:"var(--alt)"},{n:TN,col:"var(--dot-off)"}],40,25);
   $("dxLegend").innerHTML=`<span><i style="background:var(--accent)"></i>Verdadeiro positivo <b>${TP}</b></span><span><i style="border:1.7px solid var(--accent)"></i>Falso negativo <b>${FN}</b></span><span><i style="background:var(--alt)"></i>Falso positivo <b>${FP}</b></span><span><i style="background:var(--dot-off)"></i>Verdadeiro negativo <b>${TN}</b></span>`;
   const pos=TP+FP,neg=FN+TN;
-  $("dxSentence").innerHTML=`Dos <b>${pos}</b> positivos${tsT()?` (${tsT()})`:""}, <b>${TP}</b> são verdadeiros${dzT()?`, ou seja, têm ${dzT()}`:""} (VPP ≈ ${pos?pc(TP/pos):"—"}) e <b>${FP}</b> são falsos. Dos <b>${neg}</b> negativos, <b>${FN}</b> são falsos negativos (VPN ≈ ${neg?pc(TN/neg):"—"}).`;
+  $("dxSentence").innerHTML=`Dos <b>${pos}</b> positivos${tsT()?` (${tsT()})`:""}, <b>${TP}</b> são verdadeiros${dzT()?`, ou seja, têm ${dzT()}`:""} (VPP ≈ ${pv(TP,pos)}) e <b>${FP}</b> são falsos. Dos <b>${neg}</b> negativos, <b>${FN}</b> são falsos negativos (VPN ≈ ${pv(TN,neg)}).`;
   {const UR=dxRanges();if(UR&&UR.lrp&&UR.lrn&&!dxMasked())$("dxSentence").insertAdjacentHTML("beforeend",` <b>Com a incerteza</b>, o VPP fica entre ${pc(UR.lrpPost[0])} e ${pc(UR.lrpPost[1])}.`);}
   $("dotsLede").textContent=`Cada ponto é um paciente com pré-teste de ${pc(d.pre)}${dzT()?` para ${S.names.dz.trim()}`:""}, testado${tsT()?` com ${S.names.ts.trim()}`:""} (Se ${pcx(d.se)}, Esp ${pcx(d.sp)}).`;
 }
@@ -1168,7 +1234,7 @@ function dxFeedback(d,eP,eN,tP,tN){const f=[];
   if(has(eP)){const e=eP-tP;
     if(Math.abs(e)<=0.05)f.push("<b>Positivo:</b> excelente estimativa.");
     else if(has(d.se)&&Math.abs(eP-d.se)<=0.05&&Math.abs(tP-d.se)>0.1)f.push(`<b>Positivo:</b> sua estimativa ficou perto da sensibilidade (${pcx(d.se)}). É o erro clássico de trocar a probabilidade de o teste dar positivo em quem tem a doença pela probabilidade de ter a doença quando o teste deu positivo. Esta última é o VPP, e depende da pré-teste.`);
-    else if(e>0.1&&d.pre<0.15)f.push(`<b>Positivo:</b> você superestimou em ${fmt(e*100,0)} p.p. Com pré-teste de ${pc(d.pre)}, muitos dos positivos são falsos positivos. Veja a matriz de 1.000 pacientes.`);
+    else if(e>0.1&&d.pre<0.15)f.push(`<b>Positivo:</b> você superestimou em ${fmt(e*100,0)} p.p. Com pré-teste de ${pc(d.pre)}, muitos dos positivos são falsos positivos. Veja a árvore e a matriz de 1.000 pacientes.`);
     else if(e>0.1)f.push(`<b>Positivo:</b> você superestimou em ${fmt(e*100,0)} p.p. A LR+ de ${lr(d.lrp)} multiplica as odds (${fmt(d.pre/(1-d.pre),2)} → ${fmt(d.pre/(1-d.pre)*d.lrp,2)}), não a probabilidade.`);
     else if(e<-0.1)f.push(`<b>Positivo:</b> você subestimou em ${fmt(-e*100,0)} p.p. Com LR+ de ${lr(d.lrp)}, o positivo pesa mais do que parece.`);
     else f.push(`<b>Positivo:</b> perto, com erro de ${fmt(Math.abs(e)*100,0)} p.p.`);}
@@ -1331,6 +1397,8 @@ function yoursFagan(){const d=S.dx;if(dxMasked())return"";if(!(has(d.pre)&&(has(
 function yoursDots(){const d=S.dx;if(dxMasked())return"";if(!(has(d.pre)&&has(d.se)&&has(d.sp)))return"";
   const D=Math.round(1000*d.pre),TP=Math.round(D*d.se),H=1000-D,FP=Math.round(H*(1-d.sp));
   return `<div class="yours"><h4>Com os seus números</h4><p>${D} doentes → ${TP} positivos verdadeiros. ${H} sem doença → ${FP} falsos positivos. VPP = ${TP} ÷ (${TP} + ${FP}) = <b>${TP+FP?pc(TP/(TP+FP)):"—"}</b>.</p></div>`;}
+function yoursTree(){const d=S.dx,q=dxMasked()?null:nfDx();if(!q)return"";
+  return `<div class="yours"><h4>Com os seus números</h4><p>1.000 pacientes → ${q.D} com doença e ${q.H} sem doença.</p><p>${q.D} com doença → ${q.TP} positivos e ${q.FN} negativos. ${q.H} sem doença → ${q.FP} positivos e ${q.TN} negativos.</p><p>Positivos: ${q.TP} + ${q.FP} = ${q.pos}, dos quais ${q.TP} com doença → VPP = <b>${pv(q.TP,q.pos)}</b>. Negativos: ${q.FN} + ${q.TN} = ${q.neg}, dos quais ${q.TN} sem doença → VPN = <b>${pv(q.TN,q.neg)}</b>.</p></div>`;}
 function yoursChat(){const t=S.tx,r=rrrFor(t.pc);if(txMasked())return"";if(!(has(t.pc)&&has(r)&&r>0))return"";const a=t.pc*r;
   return `<div class="yours"><h4>Com os seus números</h4><p>RRA = ${pcx(t.pc)} × ${fmt(r*100,1)}% = ${fmt(a*100,2)} p.p. → NNT = 1 ÷ ${fmt(a,4)} = ${fmt(1/a,1)} → arredondado para cima: <b>${nnt(1/a)}</b>.</p></div>`;}
 const LEARN={
@@ -1364,6 +1432,24 @@ ${yoursFagan()}
 <p style="font-size:13px;color:var(--muted)">*Vale para pré-testes entre 10% e 90% (McGee, 2002).</p>
 <div class="trap"><h4>Armadilha clássica</h4><p>“O teste tem 90% de sensibilidade, então quem deu positivo tem 90% de probabilidade de estar doente.” Errado. A sensibilidade é a probabilidade de dar positivo <i>entre os doentes</i>. A probabilidade de estar doente <i>entre os positivos</i> é o VPP, que depende da pré-teste. O pós-teste positivo do nomograma é exatamente o VPP para aquele paciente.</p></div>
 <p class="src">Fagan TJ. Nomogram for Bayes's theorem. N Engl J Med 1975. · McGee S. Simplifying likelihood ratios. J Gen Intern Med 2002. · Gonzaga YBM, Bacchi AD, Souza VBP. J Evid-Based Healthc 2024.</p>`},
+dxtree:{t:"Árvore de frequências naturais",h:()=>`
+<p>A árvore faz a mesma conta do nomograma de Fagan, mas em <b>pessoas</b> e em <b>etapas</b>. Cada ramo divide o grupo anterior, e os números de um nível sempre somam o número do nível de onde saíram.</p>
+<h4>Como ler, em três passos</h4>
+<ol>
+<li><b>Quem tem a doença?</b> De 1.000 pacientes com a mesma probabilidade pré-teste, 1.000 × pré-teste têm a doença. O restante não tem.</li>
+<li><b>Como o teste responde?</b> Entre os que têm a doença, a sensibilidade dá os <b>verdadeiros positivos</b>; os que sobram são <b>falsos negativos</b>. Entre os que não têm, a especificidade dá os <b>verdadeiros negativos</b>; os que sobram são <b>falsos positivos</b>.</li>
+<li><b>Reagrupe pelo resultado.</b> Na prática você não sabe quem tem a doença: sabe só o resultado do teste. Por isso as linhas coloridas juntam as quatro folhas de outro jeito: todos os positivos de um lado, todos os negativos do outro.</li>
+</ol>
+<div class="f">VPP = verdadeiros positivos ÷ todos os positivos<br>VPN = verdadeiros negativos ÷ todos os negativos</div>
+<p>A espessura de cada ramo acompanha o tamanho do grupo que passa por ele.</p>
+<h4>Exemplo</h4>
+<p>Pré-teste 20%, sensibilidade 90%, especificidade 80%:</p>
+<ul><li>1.000 pacientes → 200 com doença e 800 sem doença.</li><li>200 com doença → 180 positivos e 20 negativos. 800 sem doença → 160 positivos e 640 negativos.</li><li>Positivos: 180 + 160 = 340, dos quais 180 com doença → VPP = <b>53%</b>. É a probabilidade pós-teste positivo do nomograma.</li></ul>
+${yoursTree()}
+<h4>Árvore, matriz e nomograma</h4>
+<p>As três figuras respondem à mesma pergunta. A árvore mostra o <b>caminho</b> da conta, a matriz de 1.000 pacientes mostra as <b>proporções</b> e o nomograma faz a conta de uma vez, com a razão de verossimilhança. Como a árvore e a matriz arredondam para pessoas inteiras, em doenças muito raras elas podem diferir um pouco do nomograma.</p>
+<div class="trap"><h4>A direção da pergunta</h4><p>A árvore é montada da doença para o teste, que é como os estudos medem sensibilidade e especificidade. A pergunta clínica vai no sentido contrário: do resultado para a doença. Ler “90% dos doentes testam positivo” como “90% dos positivos estão doentes” é confundir sensibilidade com VPP. O reagrupamento do último passo existe para inverter essa direção.</p></div>
+<p class="src">Gigerenzer G, Hoffrage U. How to improve Bayesian reasoning without instruction: frequency formats. Psychol Rev 1995. · Gigerenzer G et al. Helping doctors and patients make sense of health statistics. Psychol Sci Public Interest 2007.</p>`},
 dxdots:{t:"1.000 pacientes como este",h:()=>`
 <p>Esta figura faz a mesma conta do nomograma, mas <b>contando pessoas</b> em vez de multiplicar probabilidades. Essa forma de apresentar, chamada de <b>frequências naturais</b>, faz estudantes e médicos acertarem muito mais problemas de probabilidade diagnóstica (Gigerenzer et al., 2007).</p>
 <h4>Como a figura é montada</h4>
@@ -1580,7 +1666,7 @@ howto:{t:"Como usar este aplicativo",h:()=>`
 <li>Vírgula e ponto funcionam como separador decimal.</li></ul>
 <h4>Sugestão de uso em aula</h4>
 <ol><li><b>Desafio (10 min):</b> três casos aleatórios; a turma estima antes de revelar.</li>
-<li><b>Frequências naturais (10 min):</b> “Rastreamento de doença rara” e a matriz de 1.000 pacientes explicam o erro.</li>
+<li><b>Frequências naturais (10 min):</b> “Rastreamento de doença rara”, a árvore e a matriz de 1.000 pacientes explicam o erro.</li>
 <li><b>Decisão (15 min):</b> ative limiares e incerteza e discuta quando o exame muda a conduta.</li>
 <li><b>Tratamento (15 min):</b> “Três pacientes, mesma RRR” e o desafio do NNT.</li></ol>
 <div class="trap"><h4>Limitações</h4><ul><li>O app supõe estudos válidos e aplicáveis ao seu paciente. Ele não corrige vieses.</li><li>A curva ROC é teórica, construída a partir de um único par Se/Esp.</li><li>O NNT individualizado supõe efeito relativo constante entre riscos basais.</li></ul></div>
